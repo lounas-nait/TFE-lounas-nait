@@ -1,4 +1,4 @@
-package eafcuccle.tfe.lounasnaitecommerce;
+package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -19,6 +19,10 @@ public class Facture {
 
     @OneToOne(mappedBy = "facture", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Paiement paiement;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "commande_id", nullable = false)
+    private Commande commande;
 
     public Facture() {
     }

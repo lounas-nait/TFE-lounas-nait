@@ -1,4 +1,4 @@
-package eafcuccle.tfe.lounasnaitecommerce;
+package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
@@ -31,6 +31,10 @@ public class Commande {
     @JoinColumn(name = "client_id", nullable = false)
     @JsonIgnoreProperties("commandes")
     private Client client;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id", nullable = false)
+    private Admin admin;
 
     @OneToOne(mappedBy = "commande", cascade = CascadeType.ALL)
     private Facture facture;
@@ -85,6 +89,30 @@ public class Commande {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public List<LigneCommande> getLignesCommande() {
+        return lignesCommande;
+    }
+
+    public void setLignesCommande(List<LigneCommande> lignesCommande) {
+        this.lignesCommande = lignesCommande;
+    }
+
+    public Admin getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
+    }
+
+    public Facture getFacture() {
+        return facture;
+    }
+
+    public void setFacture(Facture facture) {
+        this.facture = facture;
     }
 
 }

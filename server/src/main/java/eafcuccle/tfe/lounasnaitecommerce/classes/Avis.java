@@ -1,4 +1,4 @@
-package eafcuccle.tfe.lounasnaitecommerce;
+package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -9,7 +9,7 @@ public class Avis {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
     @Column(name = "commentaire")
@@ -25,6 +25,10 @@ public class Avis {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id", nullable = false)
+    private Admin admin;
 
     // Constructeurs, getters et setters
 
@@ -75,4 +79,13 @@ public class Avis {
     public void setClient(Client client) {
         this.client = client;
     }
+
+    public Admin getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
+    }
+
 }

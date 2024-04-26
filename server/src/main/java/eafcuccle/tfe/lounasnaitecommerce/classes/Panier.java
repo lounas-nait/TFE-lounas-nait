@@ -1,4 +1,4 @@
-package eafcuccle.tfe.lounasnaitecommerce;
+package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -15,6 +15,10 @@ public class Panier {
 
     @OneToMany(mappedBy = "panier", cascade = CascadeType.ALL)
     private List<LignePanier> lignesPanier;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id", nullable = false)
+    private Client client;
 
     // Constructeur, getters et setters
 

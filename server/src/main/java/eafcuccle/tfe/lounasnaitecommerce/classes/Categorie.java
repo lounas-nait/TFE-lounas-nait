@@ -1,4 +1,4 @@
-package eafcuccle.tfe.lounasnaitecommerce;
+package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import jakarta.persistence.*;
 import java.util.List;

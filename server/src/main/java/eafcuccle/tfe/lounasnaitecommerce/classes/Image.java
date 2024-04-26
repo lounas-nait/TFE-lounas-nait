@@ -1,31 +1,30 @@
-package eafcuccle.tfe.lounasnaitecommerce;
+package eafcuccle.tfe.lounasnaitecommerce.classes;
 
-import jakarta.persistence.*;
 import java.util.UUID;
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "ligne_panier")
-public class LignePanier {
+@Table(name = "image")
+public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @Column(name = "quantite")
-    private int quantite;
+    @Column(name = "url", nullable = false)
+    private String url;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "instrument_id", nullable = false)
     private Instrument instrument;
 
     // Constructeurs, getters et setters
 
-    protected LignePanier() {
+    public Image() {
     }
 
-    public LignePanier(int quantite, Instrument instrument) {
-        this.quantite = quantite;
-        this.instrument = instrument;
+    public Image(String url) {
+        this.url = url;
     }
 
     public UUID getId() {
@@ -36,12 +35,12 @@ public class LignePanier {
         this.id = id;
     }
 
-    public int getQuantite() {
-        return quantite;
+    public String getUrl() {
+        return url;
     }
 
-    public void setQuantite(int quantite) {
-        this.quantite = quantite;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public Instrument getInstrument() {

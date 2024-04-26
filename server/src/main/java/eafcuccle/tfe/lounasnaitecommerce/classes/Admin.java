@@ -1,4 +1,4 @@
-package eafcuccle.tfe.lounasnaitecommerce;
+package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -19,7 +19,7 @@ public class Admin extends Utilisateur {
 
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("admin")
-    private List<Avis> avis;
+    private List<Avis> avisList;
 
     // Constructeurs, getters et setters
 
@@ -46,11 +46,11 @@ public class Admin extends Utilisateur {
         this.commandes = commandes;
     }
 
-    public List<Avis> getAvis() {
-        return avis;
+    public List<Avis> getAvisList() {
+        return avisList;
     }
 
-    public void setAvis(List<Avis> avis) {
-        this.avis = avis;
+    public void setAvisList(List<Avis> avisList) {
+        this.avisList = avisList;
     }
 }

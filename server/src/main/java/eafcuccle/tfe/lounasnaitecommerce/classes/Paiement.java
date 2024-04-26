@@ -1,4 +1,4 @@
-package eafcuccle.tfe.lounasnaitecommerce;
+package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -14,6 +14,10 @@ public class Paiement {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mode_paiement_id", nullable = false)
     private ModePaiement modePaiement;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "facture_id", nullable = false)
+    private Facture facture;
 
     // Constructeur, getters et setters
 
