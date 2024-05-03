@@ -3,6 +3,8 @@ package eafcuccle.tfe.lounasnaitecommerce.classes;
 import java.util.UUID;
 import jakarta.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "image")
 public class Image {
@@ -16,6 +18,7 @@ public class Image {
 
     @ManyToOne
     @JoinColumn(name = "instrument_id", nullable = false)
+    @JsonBackReference
     private Instrument instrument;
 
     // Constructeurs, getters et setters

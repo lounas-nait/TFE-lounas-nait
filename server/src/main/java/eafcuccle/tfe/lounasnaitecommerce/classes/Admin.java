@@ -1,6 +1,8 @@
 package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import java.util.List;
@@ -10,7 +12,7 @@ import java.util.List;
 public class Admin extends Utilisateur {
 
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("admin")
+    @JsonBackReference
     private List<Instrument> instruments;
 
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
@@ -18,7 +20,7 @@ public class Admin extends Utilisateur {
     private List<Commande> commandes;
 
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("admin")
+    @JsonBackReference
     private List<Avis> avisList;
 
     // Constructeurs, getters et setters

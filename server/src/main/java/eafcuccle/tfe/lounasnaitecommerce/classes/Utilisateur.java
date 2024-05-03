@@ -19,7 +19,7 @@ public abstract class Utilisateur {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "motDePasse", nullable = false)
+    @Column(name = "mot_de_passe", nullable = false)
     private String motDePasse;
 
     @Column(name = "adresse", nullable = false)

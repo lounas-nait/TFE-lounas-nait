@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "categorie")
 public class Categorie {
@@ -15,7 +18,8 @@ public class Categorie {
     @Column(name = "nom", nullable = false)
     private String nom;
 
-    @OneToMany(mappedBy = "categorie", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "categorie", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<Instrument> instruments;
 
     // Constructeurs, getters et setters

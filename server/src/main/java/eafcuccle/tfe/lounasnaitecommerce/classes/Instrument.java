@@ -1,5 +1,8 @@
 package eafcuccle.tfe.lounasnaitecommerce.classes;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.UUID;
@@ -32,17 +35,21 @@ public class Instrument {
     private int quantiteEnStock;
 
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Image> images;
 
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Avis> avis;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categorie_id", nullable = false)
+    @JsonManagedReference
     private Categorie categorie;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id", nullable = false)
+    @JsonManagedReference
     private Admin admin;
 
     // Constructeurs, getters et setters
