@@ -15,4 +15,5 @@ public interface InstrumentRepository extends JpaRepository<Instrument, UUID> {
     List<Instrument> findAll();
 
     List<Instrument> findByNomContainingIgnoreCase(String nom);
+
 }

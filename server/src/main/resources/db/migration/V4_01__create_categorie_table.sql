@@ -1,4 +1,4 @@
 CREATE TABLE categorie (
-    id BINARY(16) NOT NULL PRIMARY KEY,
+    id INT PRIMARY KEY,
     nom VARCHAR(255) NOT NULL
 );

@@ -10,11 +10,12 @@ import java.util.List;
 @Entity
 @Table(name = "admin")
 public class Admin extends Utilisateur {
-
-    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
-    @JsonBackReference
-    private List<Instrument> instruments;
-
+    /*
+     * @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
+     * 
+     * @JsonBackReference
+     * private List<Instrument> instruments;
+     */
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("admin")
     private List<Commande> commandes;
@@ -32,14 +33,15 @@ public class Admin extends Utilisateur {
         super(nom, email, motDePasse, adresse);
     }
 
-    public List<Instrument> getInstruments() {
-        return instruments;
-    }
-
-    public void setInstruments(List<Instrument> instruments) {
-        this.instruments = instruments;
-    }
-
+    /*
+     * public List<Instrument> getInstruments() {
+     * return instruments;
+     * }
+     * 
+     * public void setInstruments(List<Instrument> instruments) {
+     * this.instruments = instruments;
+     * }
+     */
     public List<Commande> getCommandes() {
         return commandes;
     }

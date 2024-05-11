@@ -7,8 +7,7 @@ CREATE TABLE instrument (
     prix_hors_tva FLOAT NOT NULL,
     prix_tva FLOAT NOT NULL,
     quantite_en_stock INT NOT NULL,
-    categorie_id UUID NOT NULL,
-    admin_id UUID NOT NULL,
-    FOREIGN KEY (categorie_id) REFERENCES categorie (id),
-    FOREIGN KEY (admin_id) REFERENCES admin (id)
+    categorie_id INT NOT NULL,
+    
+    FOREIGN KEY (categorie_id) REFERENCES categorie (id)
 );

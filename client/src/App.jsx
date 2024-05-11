@@ -1,48 +1,31 @@
-import { useState } from 'react'
-import { Home } from './Pages/Home'
-import { Cart } from './Pages/Cart'
-import { Favorites } from './Pages/Favorites'
-import { Order } from './Pages/Order'
+import { useState } from 'react';
+import { Home } from './Pages/Home';
+import { Cart } from './Pages/Cart';
+import { Favorites } from './Pages/Favorites';
+import { Order } from './Pages/Order';
+import { AddInstrumentForm } from './components/AddInstrumentForm';
+import { AddImageForm } from './components/AddImageToInstrument';
+import TopBar from './components/TopBar';
+import Sidebar from './components/Sidebar';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-
-import Sidebar from './components/Sidebar'
-//react router dom
-import {
-  createBrowserRouter,
-  RouterProvider,
-  createRoutesFromElements,
-  Outlet,
-  Route
-} from 'react-router-dom'
 function App() {
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route path='/' element={<Root />}>
-        <Route index element={<Home />} />
-        <Route path='/cart' element={<Cart />} />
-        <Route path='/favs' element={<Favorites />} />
-        <Route path='/orders' element={<Order />} />
-      </Route>
-    )
-  )
+
   return (
     <div className="App">
-      <RouterProvider router={router} />
-    </div>
-  )
-}
-
-export default App
-const Root = () => {
-  return (
-    <>
-      <div>
+      <Router>
         <Sidebar />
-      </div>
-      <div>
-        <Outlet />
-      </div>
-    </>
-
-  )
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/favs" element={<Favorites />} />
+          <Route path="/orders" element={<Order />} />
+          <Route path="/addInstrumentForm" element={<AddInstrumentForm />} />
+          <Route path="/AddImageForm" element={<AddImageForm />} />
+        </Routes>
+      </Router>
+    </div>
+  );
 }
+
+export default App;

@@ -1,9 +1,12 @@
 package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,23 +37,28 @@ public class Instrument {
     @Column(name = "quantite_en_stock")
     private int quantiteEnStock;
 
-    @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "instrument", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("instrument")
     private List<Image> images;
 
-    @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "instrument", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("instrument")
     private List<Avis> avis;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categorie_id", nullable = false)
-    @JsonManagedReference
+    @JsonBackReference
     private Categorie categorie;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_id", nullable = false)
-    @JsonManagedReference
-    private Admin admin;
+    /*
+     * @ManyToOne(fetch = FetchType.LAZY)
+     * 
+     * @JoinColumn(name = "admin_id", nullable = false)
+     * 
+     * @JsonManagedReference
+     * private Admin admin;
+     * 
+     */
 
     // Constructeurs, getters et setters
 
@@ -65,6 +73,7 @@ public class Instrument {
         this.prixHorsTVA = prixHorsTVA;
         this.prixTVA = prixTVA;
         this.quantiteEnStock = quantiteEnStock;
+
     }
 
     public UUID getId() {
@@ -146,12 +155,13 @@ public class Instrument {
     public void setCategorie(Categorie categorie) {
         this.categorie = categorie;
     }
-
-    public Admin getAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(Admin admin) {
-        this.admin = admin;
-    }
+    /*
+     * public Admin getAdmin() {
+     * return admin;
+     * }
+     * 
+     * public void setAdmin(Admin admin) {
+     * this.admin = admin;
+     * }
+     */
 }

@@ -2,9 +2,9 @@ package eafcuccle.tfe.lounasnaitecommerce.classes;
 
 import jakarta.persistence.*;
 import java.util.List;
-import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
@@ -13,13 +13,13 @@ public class Categorie {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", columnDefinition = "BINARY(16)")
-    private UUID id;
+    private int id;
 
     @Column(name = "nom", nullable = false)
     private String nom;
 
-    @OneToMany(mappedBy = "categorie", cascade = CascadeType.ALL)
-    @JsonBackReference
+    @OneToMany(mappedBy = "categorie", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Instrument> instruments;
 
     // Constructeurs, getters et setters
@@ -31,11 +31,11 @@ public class Categorie {
         this.nom = nom;
     }
 
-    public UUID getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(int id) {
         this.id = id;
     }
 

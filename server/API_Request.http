@@ -1,0 +1,31 @@
+### vll
+POST http://localhost:8080/api/instruments/2
+Accept: application/json
+Content-Type: application/json
+
+{
+        
+        "nom": "piano",
+        "marque": "yamaha",
+        "description": "painooo",
+        "prixHorsTVA": 600.0,
+        "prixTVA": 800.0,
+        "quantiteEnStock": 5
+        
+        
+        
+       
+
+        
+}
+
+### vll
+POST http://localhost:8080/api/instruments/978cbbbb-4dba-46f3-8185-e8b1c17dbc25/images
+Accept: application/json
+Content-Type: application/json
+
+{
+    
+    "url": "https://d1aeri3ty3izns.cloudfront.net/media/29/292337/1200/preview.jpg"
+    
+}

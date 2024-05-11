@@ -1,21 +1,20 @@
+// Importez useState pour gérer les états, et ajoutez un nouvel état pour suivre la quantité sélectionnée.
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { CiShoppingCart } from 'react-icons/ci';
 import useSWR from 'swr';
-import SearchBar from './SearchBar';
 import { generateStars } from '../functions/Etoile';
 import { calculMoyenne } from '../functions/Noter';
-import { Disclosure } from '@headlessui/react';
-import { BellIcon } from '@heroicons/react/24/outline';
+import TopBar from './TopBar';
 
-const navigation = [
-  { name: 'Catégories', href: '#', current: true },
-  { name: 'Occasion', href: '#', current: false },
-];
 
 function Main() {
   const [searchQuery, setSearchQuery] = useState('');
   const [instrumentsWithAvgRating, setInstrumentsWithAvgRating] = useState([]);
+  const [selectedInstrument, setSelectedInstrument] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   const fetchInstruments = async (url) => {
     const response = await fetch(url);
@@ -25,7 +24,10 @@ function Main() {
     return response.json();
   };
 
-  const { data: instruments, error, isValidating } = useSWR(`/api/instruments?q=${searchQuery}`, fetchInstruments);
+  // Utilisez une fonction pour construire l'URL en fonction de la recherche
+  const searchURL = `/api/instruments?q=${searchQuery}`;
+
+  const { data: instruments, error, isValidating } = useSWR(searchURL, fetchInstruments);
 
   useEffect(() => {
     if (instruments) {
@@ -42,49 +44,104 @@ function Main() {
     return <div>Chargement en cours...</div>;
   }
 
+  const handleInstrumentClick = (instrument) => {
+    setSelectedInstrument(instrument);
+    setCurrentImageIndex(0);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedInstrument(null);
+  };
+
+  const handleImageClick = (index) => {
+    setSelectedImageIndex(index);
+    setIsImageModalOpen(true);
+  };
+
+  const handleCloseImageModal = () => {
+    setIsImageModalOpen(false);
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    setQuantity(value);
+  };
+
+  const handleAddToCart = () => {
+    if (selectedInstrument && quantity <= selectedInstrument.stock) {
+      console.log(`Ajouter ${quantity} ${selectedInstrument.nom} au panier`);
+    } else {
+      console.log(`La quantité sélectionnée dépasse la quantité en stock de ${selectedInstrument.nom}`);
+    }
+  };
+
+  const goToPreviousImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? selectedInstrument.images.length - 1 : prevIndex - 1));
+  };
+
+  const goToNextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex === selectedInstrument.images.length - 1 ? 0 : prevIndex + 1));
+  };
+
   return (
     <div className='w-full relative'>
-      <Disclosure as="nav" className="bg-gradient-to-r from-amber-700 from-5% via-stone-500 via-60% to-gray-800 to-80% ...">
-        {({ open }) => (
-          <>
-            <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-              <div className="relative flex h-16 items-center justify-between">
-                <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                  <div className="hidden sm:block sm:ml-6">
-                    <div className="flex space-x-4">
-                      {navigation.map((item) => (
-                        <a
-                          key={item.name}
-                          href={item.href}
-                          className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium"
-                          aria-current={item.current ? 'page' : undefined}
-                        >
-                          {item.name}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                  <SearchBar onSearch={setSearchQuery} />
-                  <button
-                    type="button"
-                    className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 ml-2"
-                  >
-                    <span className="absolute -inset-2" />
-                    <span className="sr-only">View notifications</span>
-                    <BellIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
+      <TopBar setSearchQuery={setSearchQuery} />
+      {selectedInstrument && (
+        <div className="fixed top-0 left-0  w-full h-full bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-8 h-[600px] w-[900px] rounded-md relative">
+            <button onClick={handleCloseDetails} className="absolute top-0 right-0 m-2 p-2 text-gray-600 hover:text-gray-800">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <h1 className="text-3xl font-semibold mb-4">{selectedInstrument.nom}</h1>
+            <div className="relative">
+              <button onClick={goToPreviousImage} className="absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-200 text-gray-600 hover:text-gray-800 hover:bg-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <img src={selectedInstrument.images[currentImageIndex].url} alt="" onClick={() => handleImageClick(currentImageIndex)} className="w-full h-64 object-cover mb-4 cursor-pointer" />
+              <button onClick={goToNextImage} className="absolute right-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-200 text-gray-600 hover:text-gray-800 hover:bg-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
-          </>
-        )}
-      </Disclosure>
+            <div className="flex justify-center space-x-4 mt-4">
+              {selectedInstrument.images.map((image, index) => (
+                <img key={index} src={image.url} alt={`Image ${index}`} onClick={() => handleImageClick(index)} className="w-12 h-12 object-cover cursor-pointer border-2 border-gray-400 hover:border-stone-700 focus:outline-none rounded-md" />
+              ))}
+            </div>
+            <p className="text-gray-700">{selectedInstrument.description}</p>
+            <p className="text-gray-700">{generateStars(selectedInstrument.averageRating)}</p>
+            <div className="flex justify-between items-center mt-4">
+              <div className="flex items-center">
+                <label htmlFor="quantity" className="mr-2">Quantité:</label>
+                <input type="number" id="quantity" name="quantity" min="1" max={selectedInstrument.stock} value={quantity} onChange={handleQuantityChange} className="border border-gray-300 rounded-md px-2 py-1" />
+              </div>
+              <button onClick={handleAddToCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isImageModalOpen && (
+        <div className="fixed top-0 left-0  w-full h-full bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-8 h-[600px] w-[900px] rounded-md relative">
+            <button onClick={handleCloseImageModal} className="absolute top-0 right-0 m-2 p-2 text-gray-600 hover:text-gray-800">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <img src={selectedInstrument.images[selectedImageIndex].url} alt="" className="w-full h-full object-contain" />
+          </div>
+        </div>
+      )}
 
       <div className="products grid grid-cols-2 xl:grid-cols-5 lg:grid-cols-3 gap-9 p-4 z-20">
         {instrumentsWithAvgRating.map((product, idx) => (
-          <Link key={idx} to={`/instrument/${product.id}`} target="_blank">
+          <div key={idx} onClick={() => handleInstrumentClick(product)} className="cursor-pointer">
             <div className="product h-[300px] bg-white drop-shadow-2xl p-2 border">
               {product.images.length > 0 && (
                 <img src={product.images[0].url} alt="" className='w-full h-[60%] object-cover p-2' />
@@ -99,7 +156,7 @@ function Main() {
                 </div>
               </div>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
