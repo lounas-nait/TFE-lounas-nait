@@ -22,3 +22,13 @@
     color: #fcbf25; 
     font-size: 20px;
   }
+
+
+  .button-red {
+    color: #8e8a8a; /* red-500 */
+  }
+  
+  .button-red:hover {
+    color: #f90606; /* red-700 */
+  }
+  

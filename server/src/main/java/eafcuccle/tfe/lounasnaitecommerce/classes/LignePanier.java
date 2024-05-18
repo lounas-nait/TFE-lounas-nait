@@ -3,6 +3,8 @@ package eafcuccle.tfe.lounasnaitecommerce.classes;
 import jakarta.persistence.*;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "ligne_panier")
 public class LignePanier {
@@ -18,6 +20,7 @@ public class LignePanier {
     @JoinColumn(name = "instrument_id", nullable = false)
     private Instrument instrument;
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "panier_id", nullable = false)
     private Panier panier;
@@ -54,5 +57,13 @@ public class LignePanier {
 
     public void setInstrument(Instrument instrument) {
         this.instrument = instrument;
+    }
+
+    public Panier getPanier() {
+        return panier;
+    }
+
+    public void setPanier(Panier panier) {
+        this.panier = panier;
     }
 }

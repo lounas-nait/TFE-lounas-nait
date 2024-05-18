@@ -4,8 +4,6 @@ import { Cart } from './Pages/Cart';
 import { Favorites } from './Pages/Favorites';
 import { Order } from './Pages/Order';
 import { AddInstrumentForm } from './components/AddInstrumentForm';
-import { AddImageForm } from './components/AddImageToInstrument';
-import TopBar from './components/TopBar';
 import Sidebar from './components/Sidebar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
@@ -21,7 +19,6 @@ function App() {
           <Route path="/favs" element={<Favorites />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/addInstrumentForm" element={<AddInstrumentForm />} />
-          <Route path="/AddImageForm" element={<AddImageForm />} />
         </Routes>
       </Router>
     </div>

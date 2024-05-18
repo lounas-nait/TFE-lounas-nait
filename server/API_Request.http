@@ -8,9 +8,9 @@ Content-Type: application/json
         "nom": "piano",
         "marque": "yamaha",
         "description": "painooo",
-        "prixHorsTVA": 600.0,
-        "prixTVA": 800.0,
-        "quantiteEnStock": 5
+        "prixHorsTVA": 1000,
+        "prixTVA": 1200,
+        "quantiteEnStock": 10
         
         
         
@@ -28,4 +28,29 @@ Content-Type: application/json
     
     "url": "https://d1aeri3ty3izns.cloudfront.net/media/29/292337/1200/preview.jpg"
     
+}
+
+### vll
+POST http://localhost:8080/api/clients
+Accept: application/json
+Content-Type: application/json
+
+{
+  "nom": "lounas",
+  "email": "megane.nait@outlook.fr", 
+  "motDePasse": "lounas0303",
+  "adresse": "annet sur marne"
+    
+    
+}
+
+
+### vll
+POST http://localhost:8080/api/lignesPanier/391a27cf-f662-49a1-be44-c0d1e0f55c60/8b94e83d-fb58-4a1c-867c-74fc4b353240
+Accept: application/json
+Content-Type: application/json
+
+{
+    
+    "quantite": 2
 }

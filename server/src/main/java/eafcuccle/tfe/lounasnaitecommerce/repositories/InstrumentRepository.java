@@ -9,11 +9,14 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface InstrumentRepository extends JpaRepository<Instrument, UUID> {
     List<Instrument> findAll();
 
     List<Instrument> findByNomContainingIgnoreCase(String nom);
+
+    Optional<Instrument> findById(UUID id);
 
 }

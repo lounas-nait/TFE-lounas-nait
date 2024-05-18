@@ -1,11 +1,10 @@
-// Importez useState pour gérer les états, et ajoutez un nouvel état pour suivre la quantité sélectionnée.
+
 import React, { useState, useEffect } from 'react';
 import { CiShoppingCart } from 'react-icons/ci';
 import useSWR from 'swr';
 import { generateStars } from '../functions/Etoile';
 import { calculMoyenne } from '../functions/Noter';
 import TopBar from './TopBar';
-
 
 function Main() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,6 +14,7 @@ function Main() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const fetchInstruments = async (url) => {
     const response = await fetch(url);
@@ -24,7 +24,7 @@ function Main() {
     return response.json();
   };
 
-  // Utilisez une fonction pour construire l'URL en fonction de la recherche
+  
   const searchURL = `/api/instruments?q=${searchQuery}`;
 
   const { data: instruments, error, isValidating } = useSWR(searchURL, fetchInstruments);
@@ -47,10 +47,14 @@ function Main() {
   const handleInstrumentClick = (instrument) => {
     setSelectedInstrument(instrument);
     setCurrentImageIndex(0);
+    setQuantity(1); 
+    setErrorMessage(''); 
   };
 
   const handleCloseDetails = () => {
     setSelectedInstrument(null);
+    setQuantity(1); 
+    setErrorMessage(''); 
   };
 
   const handleImageClick = (index) => {
@@ -68,10 +72,41 @@ function Main() {
   };
 
   const handleAddToCart = () => {
-    if (selectedInstrument && quantity <= selectedInstrument.stock) {
-      console.log(`Ajouter ${quantity} ${selectedInstrument.nom} au panier`);
-    } else {
-      console.log(`La quantité sélectionnée dépasse la quantité en stock de ${selectedInstrument.nom}`);
+    if (selectedInstrument) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const existingItemIndex = cart.findIndex(item => item.id === selectedInstrument.id);
+  
+      if (existingItemIndex !== -1) {
+        const newTotalQuantity = cart[existingItemIndex].quantity + quantity;
+        if (newTotalQuantity <= selectedInstrument.quantiteEnStock) {
+          cart[existingItemIndex].quantity = newTotalQuantity;
+          setErrorMessage('');
+        } else {
+          setErrorMessage(`La quantité totale pour ${selectedInstrument.nom} dépasse la quantité en stock.`);
+          return;
+        }
+      } else {
+        if (quantity <= selectedInstrument.quantiteEnStock) {
+          cart.push({
+            id: selectedInstrument.id,
+            name: selectedInstrument.nom,
+            quantity: quantity,
+            price: selectedInstrument.prixTVA
+          });
+          setErrorMessage('');
+        } else {
+          setErrorMessage(`La quantité sélectionnée dépasse la quantité en stock de ${selectedInstrument.nom}`);
+          return;
+        }
+      }
+  
+      localStorage.setItem('cart', JSON.stringify(cart));
+      console.log('Article ajouté au panier:', {
+        id: selectedInstrument.id,
+        name: selectedInstrument.nom,
+        quantity: quantity,
+        price: selectedInstrument.prixTVA
+      });
     }
   };
 
@@ -118,9 +153,12 @@ function Main() {
             <div className="flex justify-between items-center mt-4">
               <div className="flex items-center">
                 <label htmlFor="quantity" className="mr-2">Quantité:</label>
-                <input type="number" id="quantity" name="quantity" min="1" max={selectedInstrument.stock} value={quantity} onChange={handleQuantityChange} className="border border-gray-300 rounded-md px-2 py-1" />
+                <input type="number" id="quantity" name="quantity" min="1" max={selectedInstrument.quantiteEnStock} value={quantity} onChange={handleQuantityChange} className="border border-gray-300 rounded-md px-2 py-1" />
               </div>
               <button onClick={handleAddToCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier</button>
+              {errorMessage && (
+                <div className="text-red-500 mt-2">{errorMessage}</div>
+              )}
             </div>
           </div>
         </div>
