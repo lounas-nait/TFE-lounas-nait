@@ -1,12 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { CiShoppingCart } from 'react-icons/ci';
 import useSWR from 'swr';
 import { generateStars } from '../functions/Etoile';
 import { calculMoyenne } from '../functions/Noter';
 import TopBar from './TopBar';
+import { useCart } from './CartContext'; 
 
 function Main() {
+  const { cartCount, updateCartCount } = useCart(); 
   const [searchQuery, setSearchQuery] = useState('');
   const [instrumentsWithAvgRating, setInstrumentsWithAvgRating] = useState([]);
   const [selectedInstrument, setSelectedInstrument] = useState(null);
@@ -24,7 +25,6 @@ function Main() {
     return response.json();
   };
 
-  
   const searchURL = `/api/instruments?q=${searchQuery}`;
 
   const { data: instruments, error, isValidating } = useSWR(searchURL, fetchInstruments);
@@ -94,6 +94,7 @@ function Main() {
             price: selectedInstrument.prixTVA
           });
           setErrorMessage('');
+          updateCartCount(cartCount + 1); 
         } else {
           setErrorMessage(`La quantité sélectionnée dépasse la quantité en stock de ${selectedInstrument.nom}`);
           return;

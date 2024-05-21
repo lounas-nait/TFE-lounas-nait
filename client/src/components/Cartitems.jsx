@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { AiFillDelete } from 'react-icons/ai';
 import { BsArrowLeft } from 'react-icons/bs';
 import { NavLink } from 'react-router-dom';
+import { useCart } from './CartContext';
 
 const Cartitems = () => {
-  
+  const { cartCount, updateCartCount } = useCart();
   const [cartItems, setCartItems] = useState([]);
 
   useEffect(() => {
@@ -12,18 +13,15 @@ const Cartitems = () => {
     setCartItems(savedCartItems);
   }, []);
 
-  
   const subTotal = cartItems.reduce((total, item) => total + (item.quantity * item.price), 0);
-
   const shippingCost = subTotal >= 100 ? 0 : 10;
-
- 
   const total = subTotal + shippingCost;
 
   const handleDelete = (indexToRemove) => {
     const updatedCartItems = cartItems.filter((_, index) => index !== indexToRemove);
     setCartItems(updatedCartItems);
     localStorage.setItem('cart', JSON.stringify(updatedCartItems));
+    updateCartCount(updatedCartItems.length);
   };
 
   return (
@@ -61,23 +59,23 @@ const Cartitems = () => {
                     </td>
                     <td>{item.quantity * item.price} €</td>
                     <td>
-                    <button
-  onClick={() => handleDelete(index)}
-  className="button-red"
->
-  <AiFillDelete size={"1.7rem"} />
-</button>
+                      <button
+                        onClick={() => handleDelete(index)}
+                        className="button-red"
+                      >
+                        <AiFillDelete size={"1.7rem"} />
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <div className='my-5'>
-            <NavLink to="/">
-              <button className='flex items-center space-x-3 bg-gray-200 font-semibold rounded p-2' >
-                <BsArrowLeft />
-                <span>Continuer les achats</span>
-              </button>
+              <NavLink to="/">
+                <button className='flex items-center space-x-3 bg-gray-200 font-semibold rounded p-2'>
+                  <BsArrowLeft />
+                  <span>Continuer les achats</span>
+                </button>
               </NavLink>
             </div>
           </div>
