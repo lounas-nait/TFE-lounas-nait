@@ -10,16 +10,16 @@ const SearchBar = ({ onSearch }) => {
   };
 
   return (
-    <div className="search flex justify-between items-center px-5 py-2 bg-gray-100 rounded">
+    <div className="relative flex items-center bg-gray-100 rounded w-full max-w-md">
       <input
         type="text"
         placeholder="Search product"
-        className="bg-transparent outline-0"
+        className="bg-transparent outline-none pl-4 pr-10 py-2 w-full"
         value={searchQuery}
         onChange={searchHandler}
       />
-      <button onClick={searchHandler}>
-        <CiSearch />
+      <button onClick={searchHandler} className="absolute right-2">
+        <CiSearch className="text-gray-600" />
       </button>
     </div>
   );

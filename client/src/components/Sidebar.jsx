@@ -6,7 +6,7 @@ import { NavLink } from "react-router-dom";
 import { useCart } from "./CartContext"; 
 
 const Sidebar = () => {
-  const { cartCount } = useCart(); // Utiliser le contexte du panier
+  const { cartCount } = useCart(); 
 
   return (
     <div className="fixed top-0 left-0 h-screen p-2 bg-gradient-to-b from-gray-300 from-5% via-stone-500 via-60% to-gray-700 to-80% ...">
