@@ -31,11 +31,6 @@ public class Avis {
     @JsonIgnoreProperties("avis")
     private Client client;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_id", nullable = false)
-    @JsonIgnoreProperties("avis")
-    private Admin admin;
-
     // Constructeurs, getters et setters
 
     public Avis() {
@@ -84,14 +79,6 @@ public class Avis {
 
     public void setClient(Client client) {
         this.client = client;
-    }
-
-    public Admin getAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(Admin admin) {
-        this.admin = admin;
     }
 
 }

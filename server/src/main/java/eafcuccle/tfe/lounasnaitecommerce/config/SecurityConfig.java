@@ -30,7 +30,7 @@ public class SecurityConfig {
 
         http
                 .authorizeRequests(requests -> requests
-                        .requestMatchers("/api/avis").permitAll()
+
                         .requestMatchers("/api/categories").permitAll()
                         .requestMatchers("/api/images").permitAll()
                         .requestMatchers("/api/instruments").permitAll()

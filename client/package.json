@@ -33,6 +33,7 @@
     "react-router-dom": "^6.9.0",
     "react-select": "^5.8.0",
     "react-site-nav": "^0.2.9",
+    "react-star-ratings": "^2.3.0",
     "redux-persist": "^6.0.0",
     "styled-components": "^6.1.8",
     "swr": "^2.2.5",

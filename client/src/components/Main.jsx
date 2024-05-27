@@ -7,6 +7,7 @@ import TopBar from './TopBar';
 import { useCart } from './CartContext';
 import { useAuth0 } from "@auth0/auth0-react"; 
 import Cartitems from './Cartitems';
+import { Link } from 'react-router-dom';
 
 function Main() {
   const { cartCount, updateCartCount } = useCart(); 
@@ -159,7 +160,8 @@ function Main() {
                   ))}
                 </div>
                 <p className="text-gray-700">{selectedInstrument.description}</p>
-                <p className="text-gray-700">{generateStars(selectedInstrument.averageRating)}</p>
+                <p className="text-gray-700">{generateStars(selectedInstrument.averageRating)} <Link to={`/add-review/${selectedInstrument.id}`} className="text-blue-500 underline">{selectedInstrument.avis.length} avis </Link> </p>
+                
                 <div className="flex justify-between items-center mt-4">
                   <div className="flex items-center">
                     <label htmlFor="quantity" className="mr-2">Quantité:</label>

@@ -20,10 +20,6 @@ public class Admin extends Utilisateur {
     @JsonIgnoreProperties("admin")
     private List<Commande> commandes;
 
-    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
-    @JsonBackReference
-    private List<Avis> avisList;
-
     // Constructeurs, getters et setters
 
     public Admin() {
@@ -50,11 +46,4 @@ public class Admin extends Utilisateur {
         this.commandes = commandes;
     }
 
-    public List<Avis> getAvisList() {
-        return avisList;
-    }
-
-    public void setAvisList(List<Avis> avisList) {
-        this.avisList = avisList;
-    }
 }

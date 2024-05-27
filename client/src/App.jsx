@@ -6,6 +6,7 @@ import { Order } from './Pages/Order';
 import { AddInstrumentForm } from './components/AddInstrumentForm';
 import Sidebar from './components/Sidebar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AddAvis from './components/AddAvis';
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
           <Route path="/favs" element={<Favorites />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/addInstrumentForm" element={<AddInstrumentForm />} />
+          <Route path="/add-review/:id" element={<AddAvis />} />
         </Routes>
       </Router>
     </div>
