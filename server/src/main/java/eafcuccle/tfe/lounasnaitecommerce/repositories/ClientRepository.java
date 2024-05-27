@@ -12,4 +12,8 @@ import java.util.Optional;
 @Repository
 public interface ClientRepository extends JpaRepository<Client, UUID> {
     Optional<Client> findById(UUID id);
+
+    Optional<Client> findByEmail(String email);
+
+    Optional<Client> findByAuth0Id(String auth0Id);
 }

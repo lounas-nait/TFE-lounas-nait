@@ -1,28 +1,74 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AiFillDelete } from 'react-icons/ai';
 import { BsArrowLeft } from 'react-icons/bs';
 import { NavLink } from 'react-router-dom';
 import { useCart } from './CartContext';
+import useSWR from 'swr';
+import { useAuth0 } from "@auth0/auth0-react";
 
 const Cartitems = () => {
   const { cartCount, updateCartCount } = useCart();
   const [cartItems, setCartItems] = useState([]);
+  const { getAccessTokenSilently } = useAuth0();
 
+  const fetcher = async (url) => {
+    const accessToken = await getAccessTokenSilently();
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch cart items');
+    }
+
+    return response.json();
+  };
+
+  const { data, error } = useSWR('/api/paniers', fetcher);
+  
   useEffect(() => {
-    const savedCartItems = JSON.parse(localStorage.getItem('cart')) || [];
-    setCartItems(savedCartItems);
-  }, []);
-
-  const subTotal = cartItems.reduce((total, item) => total + (item.quantity * item.price), 0);
+    if (data) {
+      setCartItems(data.lignesPanier); // Utiliser les lignes du premier panier trouvé
+    }
+  }, [data]);
+  
+  const subTotal = cartItems.reduce((total, item) => total + (item.quantite * item.instrument.prixTVA), 0);
   const shippingCost = subTotal >= 100 ? 0 : 10;
   const total = subTotal + shippingCost;
+ 
+  const handleDelete = async (indexToRemove) => {
+    const itemToRemove = cartItems[indexToRemove];
+    try {
+      const accessToken = await getAccessTokenSilently();
+      const response = await fetch(`/api/paniers/${itemToRemove.panierId}/lignesPanier/${itemToRemove.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-  const handleDelete = (indexToRemove) => {
-    const updatedCartItems = cartItems.filter((_, index) => index !== indexToRemove);
-    setCartItems(updatedCartItems);
-    localStorage.setItem('cart', JSON.stringify(updatedCartItems));
-    updateCartCount(updatedCartItems.length);
+      if (!response.ok) {
+        throw new Error('Failed to delete item');
+      }
+
+      const updatedCartItems = cartItems.filter((_, index) => index !== indexToRemove);
+      setCartItems(updatedCartItems);
+      updateCartCount(updatedCartItems.length);
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
   };
+
+  if (error) {
+    return <div>Erreur lors de la récupération du panier: {error.message}</div>;
+  }
+
+  if (!data) {
+    return <div>Chargement...</div>;
+  }
 
   return (
     <div>
@@ -47,17 +93,17 @@ const Cartitems = () => {
                     <td className='py-5'>
                       <div className='flex items-center space-x-3 py-2'>
                         <div>
-                          <h1 className='text-xl font-bold'>{item.name}</h1>
+                          <h1 className='text-xl font-bold'>{item.instrument.nom}</h1>
                         </div>
                       </div>
                     </td>
-                    <td>{item.price} €</td>
+                    <td>{item.instrument.prixTVA} €</td>
                     <td>
                       <div className='border w-24 p-2'>
-                        <input type="number" className='w-full outline-0' value={item.quantity} readOnly />
+                        <input type="number" className='w-full outline-0' value={item.quantite} readOnly />
                       </div>
                     </td>
-                    <td>{item.quantity * item.price} €</td>
+                    <td>{item.quantite * item.instrument.prixTVA} €</td>
                     <td>
                       <button
                         onClick={() => handleDelete(index)}

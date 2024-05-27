@@ -28,7 +28,11 @@ public class Panier {
     // Constructeur, getters et setters
 
     public Panier() {
+    };
+
+    public Panier(Client client) {
         this.lignesPanier = new ArrayList<>();
+        this.client = client;
     }
 
     public UUID getId() {

@@ -4,7 +4,9 @@ import useSWR from 'swr';
 import { generateStars } from '../functions/Etoile';
 import { calculMoyenne } from '../functions/Noter';
 import TopBar from './TopBar';
-import { useCart } from './CartContext'; 
+import { useCart } from './CartContext';
+import { useAuth0 } from "@auth0/auth0-react"; 
+import Cartitems from './Cartitems';
 
 function Main() {
   const { cartCount, updateCartCount } = useCart(); 
@@ -16,19 +18,32 @@ function Main() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
+  const { getAccessTokenSilently } = useAuth0();
+ 
+  const fetcher = async (url) => {
+    const accessToken = await getAccessTokenSilently();
+    return fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }).then((r) => r.json());
+  };
+
+  const { data: cartItemsData, error: cartError } = useSWR(`/api/paniers`, fetcher);  
 
   const fetchInstruments = async (url) => {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des instruments');
-    }
-    return response.json();
+    return fetch(url, {
+      headers: {
+        Accept: 'application/json',
+      },
+    }).then((r) => r.json());
   };
 
   const searchURL = `/api/instruments?q=${searchQuery}`;
 
   const { data: instruments, error, isValidating } = useSWR(searchURL, fetchInstruments);
-
+ 
   useEffect(() => {
     if (instruments) {
       const updatedInstruments = calculMoyenne(instruments);
@@ -63,43 +78,40 @@ function Main() {
     setQuantity(value);
   };
 
-  const handleAddToCart = () => {
-    if (selectedInstrument) {
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const existingItemIndex = cart.findIndex(item => item.id === selectedInstrument.id);
-  
-      if (existingItemIndex !== -1) {
-        const newTotalQuantity = cart[existingItemIndex].quantity + quantity;
-        if (newTotalQuantity <= selectedInstrument.quantiteEnStock) {
-          cart[existingItemIndex].quantity = newTotalQuantity;
-          setErrorMessage('');
-        } else {
-          setErrorMessage(`La quantité totale pour ${selectedInstrument.nom} dépasse la quantité en stock.`);
-          return;
+  const handleAddToCart = async () => {
+    if (selectedInstrument && cartItemsData && cartItemsData.id) {
+      try {
+        const accessToken = await getAccessTokenSilently();
+        const response = await fetch(`/api/lignesPanier/${cartItemsData.id}/${selectedInstrument.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            quantite: quantity
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to add item to cart');
         }
-      } else {
-        if (quantity <= selectedInstrument.quantiteEnStock) {
-          cart.push({
-            id: selectedInstrument.id,
-            name: selectedInstrument.nom,
-            quantity: quantity,
-            price: selectedInstrument.prixTVA
-          });
-          setErrorMessage('');
-          updateCartCount(cartCount + 1); 
-        } else {
-          setErrorMessage(`La quantité sélectionnée dépasse la quantité en stock de ${selectedInstrument.nom}`);
-          return;
+
+        const result = await response.json();
+        console.log('Article ajouté au panier:', result);
+
+        // Check if the item already exists in the cart
+        const existingItem = cartItemsData.lignesPanier.find(item => item.instrument.id === selectedInstrument.id);
+        if (!existingItem) {
+          // Increment the cart count only if the item is new
+          updateCartCount(cartCount + 1);
         }
+        
+        setErrorMessage('');
+      } catch (error) {
+        console.error('Error adding item to cart:', error);
+        setErrorMessage('Erreur lors de l\'ajout au panier.');
       }
-  
-      localStorage.setItem('cart', JSON.stringify(cart));
-      console.log('Article ajouté au panier:', {
-        id: selectedInstrument.id,
-        name: selectedInstrument.nom,
-        quantity: quantity,
-        price: selectedInstrument.prixTVA
-      });
     }
   };
 

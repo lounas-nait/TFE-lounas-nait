@@ -37,16 +37,15 @@ Content-Type: application/json
 
 {
   "nom": "lounas",
-  "email": "megane.nait@outlook.fr", 
-  "motDePasse": "lounas0303",
-  "adresse": "annet sur marne"
+  "email": "megane.nait@outlook.fr"
+  
     
     
 }
 
 
 ### vll
-POST http://localhost:8080/api/lignesPanier/391a27cf-f662-49a1-be44-c0d1e0f55c60/8b94e83d-fb58-4a1c-867c-74fc4b353240
+POST http://localhost:8080/api/lignesPanier/0a7426e0-f7d0-4a71-8493-eced9fcba643/658df6c2-b597-43b8-94ce-d440c499007e
 Accept: application/json
 Content-Type: application/json
 

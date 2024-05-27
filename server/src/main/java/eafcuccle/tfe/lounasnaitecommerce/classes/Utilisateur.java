@@ -19,22 +19,23 @@ public abstract class Utilisateur {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "mot_de_passe", nullable = false)
-    private String motDePasse;
-
-    @Column(name = "adresse", nullable = false)
-    private String adresse;
+    @Column(name = "auth0Id", nullable = false)
+    private String auth0Id;
 
     // Constructeurs
+
+    public UUID getId() {
+        return id;
+    }
 
     public Utilisateur() {
     }
 
-    public Utilisateur(String nom, String email, String motDePasse, String adresse) {
+    public Utilisateur(String nom, String email, String auth0Id) {
         this.nom = nom;
         this.email = email;
-        this.motDePasse = motDePasse;
-        this.adresse = adresse;
+        this.auth0Id = auth0Id;
+
     }
 
     // Getters et setters
@@ -63,19 +64,12 @@ public abstract class Utilisateur {
         this.email = email;
     }
 
-    public String getMotDePasse() {
-        return motDePasse;
+    public String getAuth0Id() {
+        return auth0Id;
     }
 
-    public void setMotDePasse(String motDePasse) {
-        this.motDePasse = motDePasse;
+    public void setAuth0Id(String auth0Id) {
+        this.auth0Id = auth0Id;
     }
 
-    public String getAdresse() {
-        return adresse;
-    }
-
-    public void setAdresse(String adresse) {
-        this.adresse = adresse;
-    }
 }

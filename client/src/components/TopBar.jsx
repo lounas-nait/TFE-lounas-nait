@@ -32,12 +32,16 @@ function TopBar({ setSearchQuery }) {
                                 >
                                     Categories
                                 </NavLink>
-                                <NavLink
-                                    to="/addInstrumentForm"
-                                    className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium"
-                                >
-                                    Ajouter instrument
-                                </NavLink>
+                                {isAuthenticated && ( // Condition pour afficher le bouton uniquement si l'utilisateur est authentifié
+    user.email.startsWith("admin") && ( // Condition supplémentaire pour vérifier si l'e-mail commence par "admin"
+        <NavLink
+            to="/addInstrumentForm"
+            className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium"
+        >
+            Ajouter instrument
+        </NavLink>
+    )
+)}
                             </div>
 
                             <div className="flex-grow flex items-center justify-center">

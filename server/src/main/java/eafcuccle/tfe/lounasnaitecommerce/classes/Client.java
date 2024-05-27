@@ -19,12 +19,12 @@ public class Client extends Utilisateur {
 
     // Constructeurs, getters et setters
 
-    protected Client() {
+    public Client() {
 
     }
 
-    public Client(String nom, String email, String motDePasse, String adresse) {
-        super(nom, email, motDePasse, adresse);
+    public Client(String nom, String email, String auth0Id) {
+        super(nom, email, auth0Id);
     }
 
     public Panier getPanier() {

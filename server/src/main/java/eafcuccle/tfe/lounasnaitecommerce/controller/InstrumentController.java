@@ -4,8 +4,10 @@ import eafcuccle.tfe.lounasnaitecommerce.classes.Categorie;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Image;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.InstrumentRepository;
+import jakarta.annotation.security.PermitAll;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.CategorieRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.ImageRepository;
+import eafcuccle.tfe.lounasnaitecommerce.dto.InstrumentDto;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,26 +56,53 @@ public class InstrumentController {
 
     @PostMapping("/api/instruments/{id}")
     public ResponseEntity<Instrument> addInstrument(@PathVariable("id") String id,
-            @RequestBody Instrument instrument,
+            @RequestBody InstrumentDto instrumentDTO,
             UriComponentsBuilder builder) {
-        // Générez un ID pour l'instrument
+        Instrument instrument = new Instrument();
         instrument.setId(UUID.randomUUID());
-        int categorieId = Integer.parseInt(id);
+        instrument.setNom(instrumentDTO.getNom());
+        instrument.setMarque(instrumentDTO.getMarque());
+        instrument.setDescription(instrumentDTO.getDescription());
+        instrument.setPrixTVA(instrumentDTO.getPrixTVA());
+        instrument.setPrixHorsTVA(instrumentDTO.getPrixHorsTVA());
+        instrument.setQuantiteEnStock(instrumentDTO.getQuantiteEnStock());
 
-        // Recherchez la catégorie correspondante dans la base de données
+        // Utiliser instrumentDTO.getCategorieId() pour obtenir la catégorie
+        int categorieId = instrumentDTO.getCategorieId();
         Optional<Categorie> categorieOptional = categorieRepository.findById(categorieId);
         if (categorieOptional.isPresent()) {
             Categorie categorie = categorieOptional.get();
             instrument.setCategorie(categorie);
-            instrument.setImages(new ArrayList<>());
             instrument.setAvis(new ArrayList<>());
+
+            // Enregistrer l'instrument dans la base de données
             Instrument savedInstrument = instrumentRepository.save(instrument);
 
+            // Ajouter les images à l'instrument
+            List<String> imageUrls = instrumentDTO.getImageUrls();
+            List<Image> images = new ArrayList<>();
+            for (String imageUrl : imageUrls) {
+                Image image = new Image();
+                image.setUrl(imageUrl);
+                image.setInstrument(savedInstrument); // Associer l'image à l'instrument
+                images.add(image);
+            }
+
+            // Enregistrer les images associées à l'instrument dans la base de données
+            List<Image> savedImages = imageRepository.saveAll(images);
+
+            // Mettre à jour la liste des images de l'instrument avec les images
+            // enregistrées
+            savedInstrument.setImages(savedImages);
+
+            // Enregistrer à nouveau l'instrument avec les images associées dans la base de
+            // données
+            Instrument finalInstrument = instrumentRepository.save(savedInstrument);
+
             URI linkToNewInstrument = builder.pathSegment("api", "instruments", "{id}")
-                    .build(savedInstrument.getId());
-            return ResponseEntity.created(linkToNewInstrument).body(savedInstrument);
+                    .build(finalInstrument.getId());
+            return ResponseEntity.created(linkToNewInstrument).body(finalInstrument);
         } else {
-            // Si la catégorie n'est pas trouvée, retournez une réponse 404
             return ResponseEntity.notFound().build();
         }
     }

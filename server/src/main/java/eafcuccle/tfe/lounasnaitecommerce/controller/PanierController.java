@@ -1,6 +1,7 @@
 package eafcuccle.tfe.lounasnaitecommerce.controller;
 
 import eafcuccle.tfe.lounasnaitecommerce.classes.Categorie;
+import eafcuccle.tfe.lounasnaitecommerce.classes.Client;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
 import eafcuccle.tfe.lounasnaitecommerce.classes.LignePanier;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Panier;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.security.core.Authentication;
 
 import java.net.URI;
 import java.util.UUID;
@@ -47,9 +49,33 @@ public class PanierController {
         this.instrumentRepository = instrumentRepository;
     }
 
+    @GetMapping("/api/paniers/client/{clientId}")
+    public ResponseEntity<Panier> getPanierByClientId(@PathVariable UUID clientId) {
+        Optional<Panier> panier = panierRepository.findByClientId(clientId);
+        if (panier.isPresent()) {
+            return ResponseEntity.ok(panier.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/api/paniers")
-    public List<Panier> getAllPaniers() {
-        return panierRepository.findAll();
+    public ResponseEntity<Panier> getAllPaniers(Authentication authentication) {
+        if (authentication == null) {
+            System.out.println("Authentication is null");
+            return ResponseEntity.noContent().build(); // Retourner une réponse vide
+        }
+        System.out.println("Authentication is not null");
+        String username = authentication.getName();
+        System.out.println("Authenticated username: " + username);
+        Optional<Client> owner = clientRepository.findByAuth0Id(username);
+        System.out.println("owner: " + owner.get());
+        if (owner.isPresent()) {
+            Client client = owner.get();
+            Panier panier = panierRepository.findByClient(client);
+            return ResponseEntity.ok(panier);
+        }
+        return ResponseEntity.noContent().build(); // Retourner une réponse vide
     }
 
     @GetMapping("/api/paniers/{id}/lignesPanier")
