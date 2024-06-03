@@ -3,6 +3,7 @@ package eafcuccle.tfe.lounasnaitecommerce.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -35,7 +36,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/images").permitAll()
                         .requestMatchers("/api/instruments").permitAll()
                         .requestMatchers("/api/instruments/{id}").permitAll()
-                        .requestMatchers("/api/clients").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/clients").permitAll()
+                        .requestMatchers("/api/aviss").permitAll()
 
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2

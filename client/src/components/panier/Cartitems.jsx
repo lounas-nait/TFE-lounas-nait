@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { AiFillDelete } from 'react-icons/ai';
 import { BsArrowLeft } from 'react-icons/bs';
 import { NavLink } from 'react-router-dom';
-import { useCart } from './CartContext';
+import { useCart } from '../context/CartContext';
 import useSWR from 'swr';
 import { useAuth0 } from "@auth0/auth0-react";
+import { Link } from 'react-router-dom';
 
 const Cartitems = () => {
   const { cartCount, updateCartCount } = useCart();
@@ -28,17 +29,17 @@ const Cartitems = () => {
   };
 
   const { data, error } = useSWR('/api/paniers', fetcher);
-  
+
   useEffect(() => {
     if (data) {
       setCartItems(data.lignesPanier); // Utiliser les lignes du premier panier trouvé
     }
   }, [data]);
-  
+
   const subTotal = cartItems.reduce((total, item) => total + (item.quantite * item.instrument.prixTVA), 0);
   const shippingCost = subTotal >= 100 ? 0 : 10;
   const total = subTotal + shippingCost;
- 
+
   const handleDelete = async (indexToRemove) => {
     const itemToRemove = cartItems[indexToRemove];
     try {
@@ -73,7 +74,7 @@ const Cartitems = () => {
   return (
     <div>
       <div className='w-11/12 m-auto py-10'>
-        <h1 className='text-3xl font-bold'>Mon Panier</h1><br/>
+        <h1 className='text-3xl font-bold'>Mon Panier</h1><br />
         <p className='text-lg text-gray-500'>Vous avez {cartItems.length} articles dans votre panier</p>
         <section className='flex justify-between items-center space-x-10'>
           <div className='w-[60%] space-y-3'>
@@ -92,8 +93,14 @@ const Cartitems = () => {
                   <tr key={index} className='border-dashed border-b'>
                     <td className='py-5'>
                       <div className='flex items-center space-x-3 py-2'>
-                        <div>
-                          <h1 className='text-xl font-bold'>{item.instrument.nom}</h1>
+                        <div className="flex items-center space-x-2">
+                          <img
+                            key={index}
+                            src={item.instrument.images[0].url}
+                            alt={`Image ${index}`}
+                            className="w-16 h-16 object-cover cursor-pointer border-2 border-gray-200 hover:border-stone-700 focus:outline-none rounded-md"
+                          />
+                          <h1 className="text-xl font-bold">{item.instrument.nom}</h1>
                         </div>
                       </div>
                     </td>
@@ -141,7 +148,7 @@ const Cartitems = () => {
               <p>{total} €</p>
             </div>
             <button className='w-full p-2 bg-gray-800 text-center text-white rounded'>
-              Passer la commande
+              <NavLink to={"/paymentForm"}>Passer la commande</NavLink>
             </button>
           </div>
         </section>

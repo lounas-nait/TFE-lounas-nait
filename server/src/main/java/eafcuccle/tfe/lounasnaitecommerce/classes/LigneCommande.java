@@ -3,6 +3,9 @@ package eafcuccle.tfe.lounasnaitecommerce.classes;
 import jakarta.persistence.*;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "ligne_commande")
 public class LigneCommande {
@@ -21,12 +24,18 @@ public class LigneCommande {
     private float prixUnitairePaye;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "instrument_id", nullable = false)
+    @JsonIgnoreProperties("ligneCommande")
+    private Instrument instrument;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "commande_id", nullable = false)
+    @JsonBackReference
     private Commande commande;
 
     // Constructeurs, getters et setters
 
-    protected LigneCommande() {
+    public LigneCommande() {
 
     }
 
@@ -66,6 +75,14 @@ public class LigneCommande {
 
     public void setPrixUnitairePaye(float prixUnitairePaye) {
         this.prixUnitairePaye = prixUnitairePaye;
+    }
+
+    public Instrument getInstrument() {
+        return instrument;
+    }
+
+    public void setInstrument(Instrument instrument) {
+        this.instrument = instrument;
     }
 
     public Commande getCommande() {

@@ -1,6 +1,7 @@
 package eafcuccle.tfe.lounasnaitecommerce.controller;
 
 import eafcuccle.tfe.lounasnaitecommerce.classes.Client;
+import eafcuccle.tfe.lounasnaitecommerce.classes.Commande;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Image;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Panier;
@@ -77,11 +78,14 @@ public class ClientController {
         UUID panierId = UUID.randomUUID();
 
         Panier panier = new Panier();
+
         panier.setId(panierId);
 
         client.setId(UUID.randomUUID());
 
         client.setPanier(panier);
+        client.setCommandes(new ArrayList<>());
+
         panier.setClient(client);
 
         clientRepository.save(client);

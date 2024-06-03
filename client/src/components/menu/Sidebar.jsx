@@ -3,13 +3,13 @@ import { HiOutlineMenuAlt2, HiOutlineHome } from "react-icons/hi";
 import { CiShoppingCart, CiDeliveryTruck } from "react-icons/ci";
 import { IoHeartOutline } from "react-icons/io5";
 import { NavLink } from "react-router-dom";
-import { useCart } from "./CartContext"; 
+import { useCart } from "../context/CartContext"; 
 
 const Sidebar = () => {
   const { cartCount } = useCart(); 
 
   return (
-    <div className="fixed top-0 left-0 h-screen p-2 bg-gradient-to-b from-gray-300 from-5% via-stone-500 via-60% to-gray-700 to-80% ...">
+    <div className="fixed top-0 left-0 h-screen p-0 bg-gradient-to-b from-gray-300 from-5% via-stone-500 via-60% to-gray-700 to-80% ...">
       <ul className="p-5 space-y-8">
         <li>
           <button>

@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { CiShoppingCart } from 'react-icons/ci';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { generateStars } from '../functions/Etoile';
 import { calculMoyenne } from '../functions/Noter';
-import TopBar from './TopBar';
-import { useCart } from './CartContext';
-import { useAuth0 } from "@auth0/auth0-react"; 
-import Cartitems from './Cartitems';
-import { Link } from 'react-router-dom';
+import TopBar from './menu/TopBar';
+import { useCart } from './context/CartContext';
+import { useAuth0 } from "@auth0/auth0-react";
+import Categories from './instrumentsList/Categories';
+import addToCart from '../functions/AddToCart';
+import handleUpdate from '../functions/HandleUpdate';
+import ImageModal from './instrumentsList/ImageModal';
+import InstrumentDetail from './instrumentsList/InstrumentDetail';
+import ProductList from './instrumentsList/InstrumentList';
 
 function Main() {
-  const { cartCount, updateCartCount } = useCart(); 
+  const { cartCount, updateCartCount } = useCart();
+  const { getAccessTokenSilently, user, isAuthenticated, isLoading } = useAuth0();
   const [searchQuery, setSearchQuery] = useState('');
   const [instrumentsWithAvgRating, setInstrumentsWithAvgRating] = useState([]);
   const [selectedInstrument, setSelectedInstrument] = useState(null);
@@ -19,8 +24,18 @@ function Main() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
-  const { getAccessTokenSilently } = useAuth0();
- 
+  const [updatedQuantiteEnStock, setUpdatedQuantiteEnStock] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  const [favoriteInstruments, setFavoriteInstruments] = useState({});
+
+  const toggleFavorite = (instrumentId) => {
+    setFavoriteInstruments((prevFavorites) => {
+      const isCurrentlyFavorite = prevFavorites[instrumentId];
+      return { ...prevFavorites, [instrumentId]: !isCurrentlyFavorite };
+    });
+  };
+
   const fetcher = async (url) => {
     const accessToken = await getAccessTokenSilently();
     return fetch(url, {
@@ -31,20 +46,25 @@ function Main() {
     }).then((r) => r.json());
   };
 
-  const { data: cartItemsData, error: cartError } = useSWR(`/api/paniers`, fetcher);  
+  const { data: cartItemsData, error: cartError } = useSWR(`/api/paniers`, fetcher);
 
   const fetchInstruments = async (url) => {
-    return fetch(url, {
+    let requestURL = url;
+    
+
+    return fetch(requestURL, {
       headers: {
         Accept: 'application/json',
       },
     }).then((r) => r.json());
   };
 
-  const searchURL = `/api/instruments?q=${searchQuery}`;
+
+  const searchURL = `/api/instruments?q=${searchQuery}${selectedCategory ? `&categorie=${selectedCategory}` : ''}`;
+
 
   const { data: instruments, error, isValidating } = useSWR(searchURL, fetchInstruments);
- 
+
   useEffect(() => {
     if (instruments) {
       const updatedInstruments = calculMoyenne(instruments);
@@ -52,17 +72,19 @@ function Main() {
     }
   }, [instruments]);
 
+
   const handleInstrumentClick = (instrument) => {
     setSelectedInstrument(instrument);
     setCurrentImageIndex(0);
-    setQuantity(1); 
-    setErrorMessage(''); 
+    setQuantity(1);
+    setUpdatedQuantiteEnStock(instrument.quantiteEnStock); // Initialiser avec la quantité actuelle
+    setErrorMessage('');
   };
 
   const handleCloseDetails = () => {
     setSelectedInstrument(null);
-    setQuantity(1); 
-    setErrorMessage(''); 
+    setQuantity(1);
+    setErrorMessage('');
   };
 
   const handleImageClick = (index) => {
@@ -79,139 +101,76 @@ function Main() {
     setQuantity(value);
   };
 
+  const handleUpdatedQuantityChange = (e) => {
+    setUpdatedQuantiteEnStock(parseInt(e.target.value, 10));
+  };
+
+  const handleUpdateInstrument = async () => {
+    handleUpdate(selectedInstrument, updatedQuantiteEnStock, getAccessTokenSilently, searchURL, setSelectedInstrument, setErrorMessage);
+  };
+
   const handleAddToCart = async () => {
-    if (selectedInstrument && cartItemsData && cartItemsData.id) {
-      try {
-        const accessToken = await getAccessTokenSilently();
-        const response = await fetch(`/api/lignesPanier/${cartItemsData.id}/${selectedInstrument.id}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            quantite: quantity
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to add item to cart');
-        }
-
-        const result = await response.json();
-        console.log('Article ajouté au panier:', result);
-
-        // Check if the item already exists in the cart
-        const existingItem = cartItemsData.lignesPanier.find(item => item.instrument.id === selectedInstrument.id);
-        if (!existingItem) {
-          // Increment the cart count only if the item is new
-          updateCartCount(cartCount + 1);
-        }
-        
-        setErrorMessage('');
-      } catch (error) {
-        console.error('Error adding item to cart:', error);
-        setErrorMessage('Erreur lors de l\'ajout au panier.');
-      }
-    }
+    addToCart(selectedInstrument, cartItemsData, cartCount, updateCartCount, quantity, getAccessTokenSilently, setErrorMessage);
   };
 
-  const goToPreviousImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? selectedInstrument.images.length - 1 : prevIndex - 1));
-  };
+  if (isLoading) {
+    return <div>Loading ...</div>;
+  }
 
-  const goToNextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex === selectedInstrument.images.length - 1 ? 0 : prevIndex + 1));
-  };
+  const isAdmin = isAuthenticated && user.email.startsWith('admin');
 
   return (
     <div className='w-full relative'>
-      <TopBar setSearchQuery={setSearchQuery} />
-      
+      <div >
+        <TopBar setSearchQuery={setSearchQuery} />
+      </div>
+      <div>
+        <br /><br /><br />
+        <Categories setSelectedCategory={setSelectedCategory} />
+      </div>
       {error ? (
         <div className="mt-4 text-red-500 text-center">Erreur lors de la récupération des instruments: {error.message}</div>
       ) : (
         <>
           {selectedInstrument && (
-            <div className="fixed top-0 left-0  w-full h-full bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-white p-8 h-[600px] w-[900px] rounded-md relative">
-                <button onClick={handleCloseDetails} className="absolute top-0 right-0 m-2 p-2 text-gray-600 hover:text-gray-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-                <h1 className="text-3xl font-semibold mb-4">{selectedInstrument.nom}</h1>
-                <div className="relative">
-                  <button onClick={goToPreviousImage} className="absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-200 text-gray-600 hover:text-gray-800 hover:bg-gray-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <img src={selectedInstrument.images[currentImageIndex].url} alt="" onClick={() => handleImageClick(currentImageIndex)} className="w-full h-64 object-cover mb-4 cursor-pointer" />
-                  <button onClick={goToNextImage} className="absolute right-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-200 text-gray-600 hover:text-gray-800 hover:bg-gray-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="flex justify-center space-x-4 mt-4">
-                  {selectedInstrument.images.map((image, index) => (
-                    <img key={index} src={image.url} alt={`Image ${index}`} onClick={() => handleImageClick(index)} className="w-12 h-12 object-cover cursor-pointer border-2 border-gray-400 hover:border-stone-700 focus:outline-none rounded-md" />
-                  ))}
-                </div>
-                <p className="text-gray-700">{selectedInstrument.description}</p>
-                <p className="text-gray-700">{generateStars(selectedInstrument.averageRating)} <Link to={`/add-review/${selectedInstrument.id}`} className="text-blue-500 underline">{selectedInstrument.avis.length} avis </Link> </p>
-                
-                <div className="flex justify-between items-center mt-4">
-                  <div className="flex items-center">
-                    <label htmlFor="quantity" className="mr-2">Quantité:</label>
-                    <input type="number" id="quantity" name="quantity" min="1" max={selectedInstrument.quantiteEnStock} value={quantity} onChange={handleQuantityChange} className="border border-gray-300 rounded-md px-2 py-1" />
-                  </div>
-                  <button onClick={handleAddToCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier</button>
-                  {errorMessage && (
-                    <div className="text-red-500 mt-2">{errorMessage}</div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <InstrumentDetail
+            handleCloseDetails={handleCloseDetails}
+            selectedInstrument={selectedInstrument}
+            currentImageIndex={currentImageIndex}
+            handleImageClick={handleImageClick}
+            selectedImageIndex={selectedImageIndex}
+            isImageModalOpen={isImageModalOpen}
+            handleCloseImageModal={handleCloseImageModal}
+            handleQuantityChange={handleQuantityChange}
+            handleUpdatedQuantityChange={handleUpdatedQuantityChange}
+            handleUpdateInstrument={handleUpdateInstrument}
+            handleAddToCart={handleAddToCart}
+            isAdmin={isAdmin}
+            quantity={quantity}
+            updatedQuantiteEnStock={updatedQuantiteEnStock}
+            errorMessage={errorMessage}
+          />
           )}
 
           {isImageModalOpen && (
-            <div className="fixed top-0 left-0  w-full h-full bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-white p-8 h-[600px] w-[900px] rounded-md relative">
-                <button onClick={handleCloseImageModal} className="absolute top-0 right-0 m-2 p-2 text-gray-600 hover:text-gray-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-                <img src={selectedInstrument.images[selectedImageIndex].url} alt="" className="w-full h-full object-contain" />
-              </div>
-            </div>
+            <ImageModal
+            handleCloseImageModal={handleCloseImageModal}
+            selectedInstrument={selectedInstrument}
+            selectedImageIndex={selectedImageIndex}
+          />
           )}
 
           <div className="products grid grid-cols-2 xl:grid-cols-5 lg:grid-cols-3 gap-9 p-4 z-20">
-            {instrumentsWithAvgRating.map((product, idx) => (
-              <div key={idx} onClick={() => handleInstrumentClick(product)} className="cursor-pointer">
-                <div className="product h-[300px] bg-white drop-shadow-2xl p-2 border">
-                  {product.images.length > 0 && (
-                    <img src={product.images[0].url} alt="" className='w-full h-[60%] object-cover p-2' />
-                  )}
-                  <div className='m-2 bg-gray-100 p-2'>
-                    <h1 className='text-xl font-semibold'>{product.nom}</h1>
-                    <p className='text-sm'>{product.description}</p>
-                    <p className='text-sm'> {generateStars(product.averageRating)}</p>
-                    <div className='flex justify-between items-center'>
-                      <p className='text-xl font-bold'>{product.prixTVA} euro</p>
-                      <CiShoppingCart size={'1.4rem'} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <ProductList
+              products={instrumentsWithAvgRating}
+              handleClick={handleInstrumentClick}
+              favoriteInstruments={favoriteInstruments}
+            />
           </div>
         </>
       )}
     </div>
+
   );
 }
 

@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "commande")
@@ -16,7 +18,7 @@ public class Commande {
     private UUID id;
 
     @Column(name = "date_commande", nullable = false)
-    private LocalDate dateCommande;
+    private String dateCommande;
 
     @Column(name = "montant_total", nullable = false)
     private float montantTotal;
@@ -25,16 +27,13 @@ public class Commande {
     private String statut;
 
     @OneToMany(mappedBy = "commande", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<LigneCommande> lignesCommande;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
-    @JsonIgnoreProperties("commandes")
+    @JsonBackReference
     private Client client;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_id", nullable = false)
-    private Admin admin;
 
     @OneToOne(mappedBy = "commande", cascade = CascadeType.ALL)
     private Facture facture;
@@ -44,7 +43,7 @@ public class Commande {
     protected Commande() {
     }
 
-    public Commande(LocalDate dateCommande, float montantTotal, String statut, Client client) {
+    public Commande(String dateCommande, float montantTotal, String statut, Client client) {
         this.dateCommande = dateCommande;
         this.montantTotal = montantTotal;
         this.statut = statut;
@@ -55,7 +54,7 @@ public class Commande {
         return id;
     }
 
-    public LocalDate getDateCommande() {
+    public String getDateCommande() {
         return dateCommande;
     }
 
@@ -75,7 +74,7 @@ public class Commande {
         this.id = id;
     }
 
-    public void setDateCommande(LocalDate dateCommande) {
+    public void setDateCommande(String dateCommande) {
         this.dateCommande = dateCommande;
     }
 
@@ -97,14 +96,6 @@ public class Commande {
 
     public void setLignesCommande(List<LigneCommande> lignesCommande) {
         this.lignesCommande = lignesCommande;
-    }
-
-    public Admin getAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(Admin admin) {
-        this.admin = admin;
     }
 
     public Facture getFacture() {

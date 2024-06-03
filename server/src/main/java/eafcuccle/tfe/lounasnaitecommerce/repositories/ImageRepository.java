@@ -7,8 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import eafcuccle.tfe.lounasnaitecommerce.classes.Image;
+import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
 
 @Repository
 public interface ImageRepository extends JpaRepository<Image, UUID> {
     List<Image> findAll();
+
+    void deleteByInstrument(Instrument instrument);
 }

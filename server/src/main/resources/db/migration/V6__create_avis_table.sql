@@ -5,11 +5,13 @@ CREATE TABLE avis (
     instrument_id UUID NOT NULL,
     client_id UUID NOT NULL,
     
-    CONSTRAINT fk_instrument
+   
         FOREIGN KEY (instrument_id)
         REFERENCES instrument (id),
-    CONSTRAINT fk_client
+    
         FOREIGN KEY (client_id)
         REFERENCES client (id)
+
+        
     
 );

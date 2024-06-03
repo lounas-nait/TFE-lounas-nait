@@ -5,9 +5,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import eafcuccle.tfe.lounasnaitecommerce.classes.Avis;
@@ -59,6 +56,11 @@ public class AvisController {
         this.clientRepository = clientRepository;
         this.avissRepository = avissRepository;
         this.instrumentRepository = instrumentRepository;
+    }
+
+    @GetMapping("/api/aviss")
+    public List<Avis> getAllAvis() {
+        return avissRepository.findAll();
     }
 
     @PostMapping("/api/aviss/{idClient}/{idInstrument}")

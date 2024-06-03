@@ -16,9 +16,6 @@ public class Admin extends Utilisateur {
      * @JsonBackReference
      * private List<Instrument> instruments;
      */
-    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("admin")
-    private List<Commande> commandes;
 
     // Constructeurs, getters et setters
 
@@ -38,12 +35,5 @@ public class Admin extends Utilisateur {
      * this.instruments = instruments;
      * }
      */
-    public List<Commande> getCommandes() {
-        return commandes;
-    }
-
-    public void setCommandes(List<Commande> commandes) {
-        this.commandes = commandes;
-    }
 
 }
