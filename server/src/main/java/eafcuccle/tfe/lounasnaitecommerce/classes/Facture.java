@@ -3,6 +3,8 @@ package eafcuccle.tfe.lounasnaitecommerce.classes;
 import jakarta.persistence.*;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "facture")
 public class Facture {
@@ -22,6 +24,7 @@ public class Facture {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "commande_id", nullable = false)
+    @JsonBackReference
     private Commande commande;
 
     public Facture() {
@@ -47,6 +50,18 @@ public class Facture {
 
     public Paiement getPaiement() {
         return paiement;
+    }
+
+    public void setPaiement(Paiement paiement) {
+        this.paiement = paiement;
+    }
+
+    public Commande getCommande() {
+        return commande;
+    }
+
+    public void setCommande(Commande commande) {
+        this.commande = commande;
     }
 
     public void setId(UUID id) {

@@ -46,6 +46,11 @@ const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageC
           <p className='ml-2'>({selectedInstrument.avis.length})</p>
           <Link to={`/add-review/${selectedInstrument.id}`} className="text-blue-500 underline ml-2"> voir les avis</Link> 
         </div>
+        <div className="flex items-center">
+          
+          <p className='ml-2'>{selectedInstrument.prixTVA}</p>
+        
+        </div>
         
         {isAdmin ? (
           <>

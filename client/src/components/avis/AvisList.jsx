@@ -1,18 +1,34 @@
-
 import React from 'react';
 import StarRatings from 'react-star-ratings'; 
 import { FaUserCircle } from 'react-icons/fa';
+import { useAuth0 } from "@auth0/auth0-react";
+import { AiFillDelete } from "react-icons/ai";
 
 const AvisList = ({ avis }) => {
-  // Inverser les avis pour afficher les plus récents en premier
+  const { user } = useAuth0();
+
   const reversedAvis = [...avis].reverse();
+
+  const isAdmin = user.email && user.email.startsWith('admin');
+
+  const handleDeleteAvis = (id) => {
+    // Logique pour supprimer l'avis avec l'ID spécifié
+  };
 
   return (
     <div className="w-1/2 pr-4">
       <h2 className="text-xl font-semibold mb-4">Avis des clients</h2>
       {reversedAvis.length > 0 ? (
         reversedAvis.map((avis) => (
-          <div key={avis.id} className="mb-4 p-4 border border-gray-300 rounded-md">
+          <div key={avis.id} className="mb-4 p-4 border border-gray-300 rounded-md relative">
+            {isAdmin && (
+              <button
+                className="absolute top-0 right-0 m-2 focus:outline-none text-red-500"
+                onClick={() => handleDeleteAvis(avis.id)}
+              >
+                <AiFillDelete size="1.7em" />
+              </button>
+            )}
             <div className="flex items-center mb-2">
               <FaUserCircle className="mr-2" size="1.7em" /> 
               <p className="text-sm font-semibold">{avis.client.nom}</p>

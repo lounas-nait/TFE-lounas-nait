@@ -48,7 +48,11 @@ const PaymentForm = () => {
   console.log(clientId)
   const subTotal = cartItems.reduce((total, item) => total + (item.quantite * item.instrument.prixTVA), 0);
   const shippingCost = subTotal >= 100 ? 0 : 10;
-  const shippingCostFinal = shippingCost === 0 ? 'Gratuite' : `${shippingCost} € `;
+  const shippingCostFinal = shippingCost === 0 ? (
+    <span className="text-green-500">Gratuite</span>
+  ) : (
+    `${shippingCost} €`
+  );
   const total = subTotal + shippingCost;
 
   const validatePaymentDetails = () => {
@@ -154,7 +158,7 @@ const PaymentForm = () => {
                         <img src={item.instrument.images[0].url} alt={item.instrument.images[0].url} />
                       </div>
                       <div className="flex-grow pl-3">
-                        <h6 className="font-semibold uppercase text-gray-600">{item.name}</h6>
+                        <h6 className="font-semibold uppercase text-gray-600">{item.instrument.nom}</h6>
                         <p className="text-gray-400">x {item.quantite}</p>
                       </div>
                       <div>
@@ -170,7 +174,7 @@ const PaymentForm = () => {
                       <span className="text-gray-600">Subtotal</span>
                     </div>
                     <div className="pl-3">
-                      <span className="font-semibold">{subTotal}</span>
+                      <span className="font-semibold">{subTotal} €</span>
                     </div>
                   </div>
                   <div className="w-full flex items-center">
@@ -178,7 +182,7 @@ const PaymentForm = () => {
                       <span className="text-gray-600">Livraison</span>
                     </div>
                     <div className="pl-3">
-                      <span className="font-semibold">{shippingCostFinal}</span>
+                      <span className="font-semibold">{shippingCostFinal} </span>
                     </div>
                   </div>
                 </div>
@@ -189,7 +193,7 @@ const PaymentForm = () => {
                     </div>
                     <div className="pl-3">
                       <span className="font-semibold">
-                        {total}
+                        {total} €
                       </span>
                     </div>
                   </div>
@@ -202,7 +206,7 @@ const PaymentForm = () => {
                       <span className="text-gray-600 font-semibold">Contact</span>
                     </div>
                     <div className="flex-grow pl-3">
-                      <span>insturment SHOP</span>
+                      <span>Music SHOP</span>
                     </div>
                   </div>
                   
@@ -221,7 +225,7 @@ const PaymentForm = () => {
                         <div>
                           <input
                             className="w-full px-3 py-2 mb-1 border border-gray-200 rounded-md focus:outline-none focus:border-indigo-500 transition-colors"
-                            placeholder="John Smith"
+                            placeholder="NAIT YOUCEF Lounas"
                             type="text"
                             name="nameOnCard"
                             value={cardDetails.nameOnCard}
@@ -304,7 +308,7 @@ const PaymentForm = () => {
                   onClick={handlePayment}
                   className="block w-full max-w-xs mx-auto bg-indigo-500 hover:bg-indigo-700 focus:bg-indigo-700 text-white rounded-lg px-3 py-2 font-semibold"
                 >
-                  PAY NOW
+                  PAYER
                 </button>
               </div>
             </div>

@@ -4,8 +4,9 @@ import eafcuccle.tfe.lounasnaitecommerce.classes.Categorie;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Image;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.InstrumentRepository;
+import eafcuccle.tfe.lounasnaitecommerce.repositories.LigneCommandeRepository;
+import eafcuccle.tfe.lounasnaitecommerce.repositories.LignePanierRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.PanierRepository;
-import jakarta.annotation.security.PermitAll;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.AvissRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.CategorieRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.ImageRepository;
@@ -35,17 +36,23 @@ public class InstrumentController {
     private final ImageRepository imageRepository;
     private final PanierRepository panierRepository;
     private final AvissRepository avissRepository;
+    private final LigneCommandeRepository ligneCommandeRepository;
+    private final LignePanierRepository lignePanierRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(InstrumentController.class);
 
     @Autowired
     public InstrumentController(InstrumentRepository instrumentRepository, CategorieRepository categorieRepository,
-            ImageRepository imageRepository, PanierRepository panierRepository, AvissRepository avissRepository) {
+            ImageRepository imageRepository, PanierRepository panierRepository, AvissRepository avissRepository,
+            LigneCommandeRepository ligneCommandeRepository,
+            LignePanierRepository lignePanierRepository) {
         this.instrumentRepository = instrumentRepository;
         this.categorieRepository = categorieRepository;
         this.imageRepository = imageRepository;
         this.panierRepository = panierRepository;
         this.avissRepository = avissRepository;
+        this.ligneCommandeRepository = ligneCommandeRepository;
+        this.lignePanierRepository = lignePanierRepository;
     }
 
     @GetMapping("/api/instruments")
@@ -155,7 +162,10 @@ public class InstrumentController {
             Instrument instrument = instrumentOptional.get();
             avissRepository.deleteByInstrument(instrument);
             imageRepository.deleteByInstrument(instrument);
+            ligneCommandeRepository.deleteByInstrument(instrument);
+            lignePanierRepository.deleteByInstrument(instrument);
             instrumentRepository.delete(instrument);
+
             logger.info("Instrument supprimée : {}", instrument);
             return ResponseEntity.noContent().build();
         } else {

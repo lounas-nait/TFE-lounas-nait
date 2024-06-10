@@ -36,6 +36,7 @@ public class Commande {
     private Client client;
 
     @OneToOne(mappedBy = "commande", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private Facture facture;
 
     // Constructeurs, getters et setters

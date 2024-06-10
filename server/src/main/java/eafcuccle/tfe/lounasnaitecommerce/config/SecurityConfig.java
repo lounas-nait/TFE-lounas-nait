@@ -38,6 +38,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/instruments/{id}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/clients").permitAll()
                         .requestMatchers("/api/aviss").permitAll()
+                        .requestMatchers("/api/paiements").permitAll()
+                        .requestMatchers("/api/factures").permitAll()
 
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2

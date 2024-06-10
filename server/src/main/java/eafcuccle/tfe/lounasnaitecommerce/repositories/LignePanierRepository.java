@@ -17,4 +17,6 @@ public interface LignePanierRepository extends JpaRepository<LignePanier, UUID> 
     List<LignePanier> findByPanier(Panier panier);
 
     Optional<LignePanier> findByPanierAndInstrument(Panier panier, Instrument instrument);
+
+    void deleteByInstrument(Instrument instrument);
 }

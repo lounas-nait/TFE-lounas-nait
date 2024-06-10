@@ -15,4 +15,5 @@ import eafcuccle.tfe.lounasnaitecommerce.classes.LigneCommande;
 public interface LigneCommandeRepository extends JpaRepository<LigneCommande, UUID> {
     Optional<LigneCommande> findById(UUID id);
 
+    void deleteByInstrument(Instrument instrument);
 }

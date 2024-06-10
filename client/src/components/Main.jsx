@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { CiShoppingCart } from 'react-icons/ci';
 import useSWR, { mutate } from 'swr';
-import { generateStars } from '../functions/Etoile';
-import { calculMoyenne } from '../functions/Noter';
-import TopBar from './menu/TopBar';
-import { useCart } from './context/CartContext';
 import { useAuth0 } from "@auth0/auth0-react";
+import TopBar from './menu/TopBar';
 import Categories from './instrumentsList/Categories';
-import addToCart from '../functions/AddToCart';
-import handleUpdate from '../functions/HandleUpdate';
 import ImageModal from './instrumentsList/ImageModal';
 import InstrumentDetail from './instrumentsList/InstrumentDetail';
 import ProductList from './instrumentsList/InstrumentList';
+import addToCart from '../functions/AddToCart';
+import handleUpdate from '../functions/HandleUpdate';
+import { useCart } from './context/CartContext';
+import { calculMoyenne } from '../functions/Noter';
 
 function Main() {
   const { cartCount, updateCartCount } = useCart();
@@ -26,7 +24,6 @@ function Main() {
   const [errorMessage, setErrorMessage] = useState('');
   const [updatedQuantiteEnStock, setUpdatedQuantiteEnStock] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('');
-
   const [favoriteInstruments, setFavoriteInstruments] = useState({});
 
   const toggleFavorite = (instrumentId) => {
@@ -50,8 +47,6 @@ function Main() {
 
   const fetchInstruments = async (url) => {
     let requestURL = url;
-    
-
     return fetch(requestURL, {
       headers: {
         Accept: 'application/json',
@@ -59,10 +54,7 @@ function Main() {
     }).then((r) => r.json());
   };
 
-
   const searchURL = `/api/instruments?q=${searchQuery}${selectedCategory ? `&categorie=${selectedCategory}` : ''}`;
-
-
   const { data: instruments, error, isValidating } = useSWR(searchURL, fetchInstruments);
 
   useEffect(() => {
@@ -72,12 +64,11 @@ function Main() {
     }
   }, [instruments]);
 
-
   const handleInstrumentClick = (instrument) => {
     setSelectedInstrument(instrument);
     setCurrentImageIndex(0);
     setQuantity(1);
-    setUpdatedQuantiteEnStock(instrument.quantiteEnStock); // Initialiser avec la quantité actuelle
+    setUpdatedQuantiteEnStock(instrument.quantiteEnStock);
     setErrorMessage('');
   };
 
@@ -113,6 +104,21 @@ function Main() {
     addToCart(selectedInstrument, cartItemsData, cartCount, updateCartCount, quantity, getAccessTokenSilently, setErrorMessage);
   };
 
+  const handleDeleteInstrument = async (id) => {
+    const accessToken = await getAccessTokenSilently();
+    try {
+      await fetch(`/api/instruments/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      mutate(searchURL); // Refresh the instruments list
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'instrument', error);
+    }
+  };
+
   if (isLoading) {
     return <div>Loading ...</div>;
   }
@@ -134,43 +140,44 @@ function Main() {
         <>
           {selectedInstrument && (
             <InstrumentDetail
-            handleCloseDetails={handleCloseDetails}
-            selectedInstrument={selectedInstrument}
-            currentImageIndex={currentImageIndex}
-            handleImageClick={handleImageClick}
-            selectedImageIndex={selectedImageIndex}
-            isImageModalOpen={isImageModalOpen}
-            handleCloseImageModal={handleCloseImageModal}
-            handleQuantityChange={handleQuantityChange}
-            handleUpdatedQuantityChange={handleUpdatedQuantityChange}
-            handleUpdateInstrument={handleUpdateInstrument}
-            handleAddToCart={handleAddToCart}
-            isAdmin={isAdmin}
-            quantity={quantity}
-            updatedQuantiteEnStock={updatedQuantiteEnStock}
-            errorMessage={errorMessage}
-          />
+              handleCloseDetails={handleCloseDetails}
+              selectedInstrument={selectedInstrument}
+              currentImageIndex={currentImageIndex}
+              handleImageClick={handleImageClick}
+              selectedImageIndex={selectedImageIndex}
+              isImageModalOpen={isImageModalOpen}
+              handleCloseImageModal={handleCloseImageModal}
+              handleQuantityChange={handleQuantityChange}
+              handleUpdatedQuantityChange={handleUpdatedQuantityChange}
+              handleUpdateInstrument={handleUpdateInstrument}
+              handleAddToCart={handleAddToCart}
+              isAdmin={isAdmin}
+              quantity={quantity}
+              updatedQuantiteEnStock={updatedQuantiteEnStock}
+              errorMessage={errorMessage}
+            />
           )}
 
           {isImageModalOpen && (
             <ImageModal
-            handleCloseImageModal={handleCloseImageModal}
-            selectedInstrument={selectedInstrument}
-            selectedImageIndex={selectedImageIndex}
-          />
+              handleCloseImageModal={handleCloseImageModal}
+              selectedInstrument={selectedInstrument}
+              selectedImageIndex={selectedImageIndex}
+            />
           )}
 
           <div className="products grid grid-cols-2 xl:grid-cols-5 lg:grid-cols-3 gap-9 p-4 z-20">
-          <ProductList
+            <ProductList
               products={instrumentsWithAvgRating}
               handleClick={handleInstrumentClick}
               favoriteInstruments={favoriteInstruments}
+              isAdmin={isAdmin}
+              handleDelete={handleDeleteInstrument}
             />
           </div>
         </>
       )}
     </div>
-
   );
 }
 
