@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { generateStars } from '../../functions/Etoile'; 
 import { Link } from 'react-router-dom';
 
-const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageClick, isAdmin, handleUpdatedQuantityChange, handleUpdateInstrument, handleQuantityChange, handleAddToCart, quantity, updatedQuantiteEnStock, errorMessage }) => {
+const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageClick, isAdmin, handleUpdatedQuantiteChange, handleUpdateInstrument, handleQuantiteChange, handleAddToCart, quantite, updatedQuantiteEnStock, errorMessage }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const goToPreviousImage = () => {
@@ -57,15 +57,15 @@ const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageC
             <p className="text-gray-700">Quantité en stock: {selectedInstrument.quantiteEnStock}</p>
             <div className="flex items-center mt-4">
               <label htmlFor="updatedQuantity" className="mr-2">Nouvelle quantité:</label>
-              <input type="number" id="updatedQuantity" name="updatedQuantity" min="0" value={updatedQuantiteEnStock} onChange={handleUpdatedQuantityChange} className="border border-gray-300 rounded-md px-2 py-1" />
+              <input type="number" id="updatedQuantity" name="updatedQuantity" min="0" value={updatedQuantiteEnStock} onChange={handleUpdatedQuantiteChange} className="border border-gray-300 rounded-md px-2 py-1" />
               <button onClick={handleUpdateInstrument} className="ml-4 bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Update</button>
             </div>
           </>
         ) : (
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center">
-              <label htmlFor="quantity" className="mr-2">Quantité:</label>
-              <input type="number" id="quantity" name="quantity" min="1" max={selectedInstrument.quantiteEnStock} value={quantity} onChange={handleQuantityChange} className="border border-gray-300 rounded-md px-2 py-1" />
+              <label htmlFor="quantite" className="mr-2">Quantité:</label>
+              <input type="number" id="quantite" name="quantite" min="1" max={selectedInstrument.quantiteEnStock} value={quantite} onChange={handleQuantiteChange} className="border border-gray-300 rounded-md px-2 py-1" />
             </div>
             <button onClick={handleAddToCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier</button>
             {errorMessage && (

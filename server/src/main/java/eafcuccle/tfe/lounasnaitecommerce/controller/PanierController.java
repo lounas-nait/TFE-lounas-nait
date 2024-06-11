@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.util.UUID;
@@ -115,7 +116,7 @@ public class PanierController {
             if (existingLignePanierOptional.isPresent()) {
 
                 LignePanier existingLignePanier = existingLignePanierOptional.get();
-                existingLignePanier.setQuantite(existingLignePanier.getQuantite() + lignePanier.getQuantite());
+                existingLignePanier.setQuantite(lignePanier.getQuantite());
                 LignePanier updatedLignePanier = lignePanierRepository.save(existingLignePanier);
 
                 return ResponseEntity.ok().body(updatedLignePanier);
@@ -131,6 +132,22 @@ public class PanierController {
 
                 return ResponseEntity.created(linkToNewLignePanier).body(savedLignePanier);
             }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/api/lignesPanier/{idPanier}/{id}")
+    @Transactional
+    public ResponseEntity<Void> deleteLignePanier(@PathVariable UUID id) {
+        Optional<LignePanier> lignePanierOptional = lignePanierRepository.findById(id);
+        if (lignePanierOptional.isPresent()) {
+            LignePanier lignePanier = lignePanierOptional.get();
+
+            lignePanierRepository.delete(lignePanier);
+
+            logger.info("Instrument supprimée : {}", lignePanier);
+            return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
         }

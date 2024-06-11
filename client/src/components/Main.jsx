@@ -20,7 +20,7 @@ function Main() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
+  const [quantite, setQuantite] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [updatedQuantiteEnStock, setUpdatedQuantiteEnStock] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -33,17 +33,28 @@ function Main() {
     });
   };
 
-  const fetcher = async (url) => {
-    const accessToken = await getAccessTokenSilently();
-    return fetch(url, {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }).then((r) => r.json());
+  const fetchCartItemCount = async () => {
+    try {
+      const accessToken = await getAccessTokenSilently();
+      const cartResponse = await fetch(`/api/paniers`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const cartItemsData = await cartResponse.json();
+      const itemCount = cartItemsData?.lignesPanier?.length || 0;
+      updateCartCount(itemCount);
+    } catch (error) {
+      console.error('Erreur lors de la récupération du panier', error);
+    }
   };
 
-  const { data: cartItemsData, error: cartError } = useSWR(`/api/paniers`, fetcher);
+  useEffect(() => {
+    // Récupérer le nombre d'articles dans le panier lors du chargement initial
+    if (isAuthenticated) {
+      fetchCartItemCount();
+    }
+  }, [isAuthenticated]); // Exécuter cette action lorsque l'utilisateur est authentifié
 
   const fetchInstruments = async (url) => {
     let requestURL = url;
@@ -67,14 +78,14 @@ function Main() {
   const handleInstrumentClick = (instrument) => {
     setSelectedInstrument(instrument);
     setCurrentImageIndex(0);
-    setQuantity(1);
+    setQuantite(1);
     setUpdatedQuantiteEnStock(instrument.quantiteEnStock);
     setErrorMessage('');
   };
 
   const handleCloseDetails = () => {
     setSelectedInstrument(null);
-    setQuantity(1);
+    setQuantite(1);
     setErrorMessage('');
   };
 
@@ -87,12 +98,12 @@ function Main() {
     setIsImageModalOpen(false);
   };
 
-  const handleQuantityChange = (e) => {
+  const handleQuantiteChange = (e) => {
     const value = parseInt(e.target.value, 10);
-    setQuantity(value);
+    setQuantite(value);
   };
 
-  const handleUpdatedQuantityChange = (e) => {
+  const handleUpdatedQuantiteChange = (e) => {
     setUpdatedQuantiteEnStock(parseInt(e.target.value, 10));
   };
 
@@ -101,8 +112,24 @@ function Main() {
   };
 
   const handleAddToCart = async () => {
-    addToCart(selectedInstrument, cartItemsData, cartCount, updateCartCount, quantity, getAccessTokenSilently, setErrorMessage);
+    try {
+      const accessToken = await getAccessTokenSilently();
+      const cartResponse = await fetch(`/api/paniers`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const cartItemsData = await cartResponse.json();
+  
+      // Appeler la fonction addToCart avec les données du panier récupérées
+      addToCart(selectedInstrument, cartItemsData, cartCount, updateCartCount, quantite, getAccessTokenSilently, setErrorMessage);
+    } catch (error) {
+      console.error('Erreur lors de la récupération du panier', error);
+      console.log(cartCount)
+      
+    }
   };
+  
 
   const handleDeleteInstrument = async (id) => {
     const accessToken = await getAccessTokenSilently();
@@ -113,7 +140,7 @@ function Main() {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      mutate(searchURL); // Refresh the instruments list
+      mutate(searchURL);
     } catch (error) {
       console.error('Erreur lors de la suppression de l\'instrument', error);
     }
@@ -147,12 +174,12 @@ function Main() {
               selectedImageIndex={selectedImageIndex}
               isImageModalOpen={isImageModalOpen}
               handleCloseImageModal={handleCloseImageModal}
-              handleQuantityChange={handleQuantityChange}
-              handleUpdatedQuantityChange={handleUpdatedQuantityChange}
+              handleQuantiteChange={handleQuantiteChange}
+              handleUpdatedQuantiteChange={handleUpdatedQuantiteChange}
               handleUpdateInstrument={handleUpdateInstrument}
               handleAddToCart={handleAddToCart}
               isAdmin={isAdmin}
-              quantity={quantity}
+              quantite={quantite}
               updatedQuantiteEnStock={updatedQuantiteEnStock}
               errorMessage={errorMessage}
             />

@@ -1,17 +1,19 @@
-const addToCart = async (selectedInstrument, cartItemsData, cartCount, updateCartCount, quantity, getAccessTokenSilently, setErrorMessage) => {
+const addToCart = async (selectedInstrument, cartItemsData, cartCount, updateCartCount, quantite, getAccessTokenSilently, setErrorMessage) => {
   if (selectedInstrument && cartItemsData && cartItemsData.id) {
     try {
       const accessToken = await getAccessTokenSilently();
-      let updatedQuantity = quantity;
+      let updatedQuantite = quantite;
 
-      // Vérifier si l'instrument est déjà présent dans le panier
+      
       const existingItem = cartItemsData.lignesPanier.find(item => item.instrument.id === selectedInstrument.id);
+      
       if (existingItem) {
-        updatedQuantity += existingItem.quantite; // Ajouter la quantité déjà présente dans le panier à la nouvelle quantité demandée
+        
+        updatedQuantite += existingItem.quantite;
       }
 
-      // Vérifier si la quantité demandée totale est disponible en stock
-      if (updatedQuantity > selectedInstrument.quantiteEnStock) {
+     
+      if (updatedQuantite > selectedInstrument.quantiteEnStock) {
         throw new Error('La quantité demandée dépasse la quantité en stock.');
       }
 
@@ -22,7 +24,7 @@ const addToCart = async (selectedInstrument, cartItemsData, cartCount, updateCar
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          quantite: updatedQuantity
+          quantite: updatedQuantite
         }),
       });
 
@@ -34,13 +36,15 @@ const addToCart = async (selectedInstrument, cartItemsData, cartCount, updateCar
       console.log('Article ajouté au panier:', result);
 
       if (!existingItem) {
-        updateCartCount(cartCount + 1);
+       
+        updateCartCount(cartCount + 1); 
+        console.log(cartCount);
       }
 
       setErrorMessage('');
     } catch (error) {
       console.error('Error adding item to cart:', error);
-      setErrorMessage(error.message); // Afficher le message d'erreur approprié
+      setErrorMessage(error.message); 
     }
   }
 };

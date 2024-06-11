@@ -3,9 +3,8 @@ import { AiFillDelete } from 'react-icons/ai';
 import { BsArrowLeft } from 'react-icons/bs';
 import { NavLink } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { useAuth0 } from "@auth0/auth0-react";
-import { Link } from 'react-router-dom';
 
 const Cartitems = () => {
   const { cartCount, updateCartCount } = useCart();
@@ -28,11 +27,12 @@ const Cartitems = () => {
     return response.json();
   };
 
-  const { data, error } = useSWR('/api/paniers', fetcher);
+  const searchURL = '/api/paniers';
+  const { data, error } = useSWR(searchURL, fetcher);
 
   useEffect(() => {
     if (data) {
-      setCartItems(data.lignesPanier); // Utiliser les lignes du premier panier trouvé
+      setCartItems(data.lignesPanier); 
     }
   }, [data]);
 
@@ -40,11 +40,10 @@ const Cartitems = () => {
   const shippingCost = subTotal >= 100 ? 0 : 10;
   const total = subTotal + shippingCost;
 
-  const handleDelete = async (indexToRemove) => {
-    const itemToRemove = cartItems[indexToRemove];
+  const handleDelete = async (id) => {
     try {
       const accessToken = await getAccessTokenSilently();
-      const response = await fetch(`/api/paniers/${itemToRemove.panierId}/lignesPanier/${itemToRemove.id}`, {
+      const response = await fetch(`/api/lignesPanier/${data.id}/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -55,9 +54,20 @@ const Cartitems = () => {
         throw new Error('Failed to delete item');
       }
 
-      const updatedCartItems = cartItems.filter((_, index) => index !== indexToRemove);
+      // Trouver l'élément supprimé pour ajuster le compteur du panier
+      const deletedItem = cartItems.find(item => item.id === id);
+
+      // Mettre à jour les éléments du panier localement
+      const updatedCartItems = cartItems.filter(item => item.id !== id);
       setCartItems(updatedCartItems);
-      updateCartCount(updatedCartItems.length);
+
+      // Décrémenter le compteur du panier
+      if (deletedItem) {
+        updateCartCount(cartCount - 1);
+      }
+
+      // Mettre à jour les données du panier sur le serveur
+      mutate(searchURL);
     } catch (error) {
       console.error('Error deleting item:', error);
     }
@@ -113,7 +123,7 @@ const Cartitems = () => {
                     <td>{item.quantite * item.instrument.prixTVA} €</td>
                     <td>
                       <button
-                        onClick={() => handleDelete(index)}
+                        onClick={() => handleDelete(item.id)}
                         className="button-red"
                       >
                         <AiFillDelete size={"1.7rem"} />
