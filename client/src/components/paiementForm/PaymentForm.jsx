@@ -1,8 +1,9 @@
+// PaymentForm.js
 import React, { useState } from 'react';
-import axios from 'axios';
 import useSWR from 'swr';
 import { useAuth0 } from "@auth0/auth0-react";
-import { useCart } from '../context/CartContext'; 
+import { useCart } from '../context/CartContext';
+import handlePayment from './handlePayment';
 
 const PaymentForm = () => {
   const { getAccessTokenSilently } = useAuth0();
@@ -33,7 +34,6 @@ const PaymentForm = () => {
     securityCode: ''
   });
 
-  
   const [paymentError, setPaymentError] = useState(null); // Nouvel état pour gérer les erreurs de paiement
 
   const { cartCount, updateCartCount } = useCart(); // Utilisation du hook useCart pour obtenir et mettre à jour le compteur de panier
@@ -43,9 +43,7 @@ const PaymentForm = () => {
 
   const cartItems = dataPanier.lignesPanier;
   const clientId = dataClient.id;
-  
-  
-  console.log(clientId)
+
   const subTotal = cartItems.reduce((total, item) => total + (item.quantite * item.instrument.prixTVA), 0);
   const shippingCost = subTotal >= 100 ? 0 : 10;
   const shippingCostFinal = shippingCost === 0 ? (
@@ -67,77 +65,9 @@ const PaymentForm = () => {
       return false;
     }
 
-    // Autres validations peuvent être ajoutées ici
-
     return true;
   };
 
-  const handlePayment = async () => {
-    if (!validatePaymentDetails()) {
-      return; // Sortir de la fonction si les détails de paiement ne sont pas valides
-    }
-
-    // Si les détails de paiement sont valides, continuer avec le paiement
-    try {
-      const accessToken = await getAccessTokenSilently();
-      const response = await fetch(`/api/commandes/${clientId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          dateCommande: today, // Format LocalDate (YYYY-MM-DD)
-          montantTotal: total, // Assurez-vous que totalAmount est défini
-          statut: 'confirmé',
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to create order');
-      }
-      
-      console.log('Order created:', await response.json());
-
-      // Suppression des lignes du panier
-      for (const ligne of cartItems) {
-        const deleteResponse = await fetch(`/api/lignesPanier/${ligne.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
-        });
-
-        if (!deleteResponse.ok) {
-          console.error(`Failed to delete lignePanier with id ${ligne.id}`);
-        } else {
-          console.log(`LignePanier with id ${ligne.id} deleted`);
-        }
-      }
-
-      // Réinitialisation du compteur de panier à zéro après suppression
-      updateCartCount(0);
-
-      // Effacer les détails de la carte après le paiement réussi
-      setCardDetails({
-        nameOnCard: '',
-        cardNumber: '',
-        expirationMonth: '01',
-        expirationYear: '2024',
-        securityCode: ''
-      });
-
-      // Effacer les éventuelles erreurs de paiement
-      setPaymentError(null);
-
-      // (Par exemple, vider le panier dans votre state management, rediriger l'utilisateur, etc.)
-
-    } catch (error) {
-      console.error('Error during payment process:', error);
-      setPaymentError('Une erreur s\'est produite lors du traitement du paiement. Veuillez réessayer.');
-    }
-  };
-  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCardDetails({ ...cardDetails, [name]: value });
@@ -169,7 +99,7 @@ const PaymentForm = () => {
                 ))}
 
                 <div className="mb-6 pb-6 border-b border-gray-200 text-gray-800">
-                <div className="w-full flex mb-3 items-center">
+                  <div className="w-full flex mb-3 items-center">
                     <div className="flex-grow">
                       <span className="text-gray-600">Subtotal</span>
                     </div>
@@ -209,7 +139,6 @@ const PaymentForm = () => {
                       <span>Music SHOP</span>
                     </div>
                   </div>
-                  
                 </div>
                 <div className="w-full mx-auto rounded-lg bg-white border border-gray-200 text-gray-800 font-light mb-6">
                   <div className="w-full p-3 border-b border-gray-200">
@@ -305,7 +234,18 @@ const PaymentForm = () => {
                 </div>
                 {paymentError && <div className="text-red-500 mb-4">{paymentError}</div>}
                 <button
-                  onClick={handlePayment}
+                  onClick={() => handlePayment(
+                    cardDetails,
+                    validatePaymentDetails,
+                    clientId,
+                    cartItems,
+                    total,
+                    today,
+                    getAccessTokenSilently,
+                    updateCartCount,
+                    setPaymentError,
+                    setCardDetails
+                  )}
                   className="block w-full max-w-xs mx-auto bg-indigo-500 hover:bg-indigo-700 focus:bg-indigo-700 text-white rounded-lg px-3 py-2 font-semibold"
                 >
                   PAYER
@@ -313,12 +253,10 @@ const PaymentForm = () => {
               </div>
             </div>
           </div>
-       
-          </div>
+        </div>
+      </div>
     </div>
-  </div>
-
-);
+  );
 };
 
 export default PaymentForm;

@@ -10,6 +10,7 @@ import addToCart from '../functions/AddToCart';
 import handleUpdate from '../functions/HandleUpdate';
 import { useCart } from './context/CartContext';
 import { calculMoyenne } from '../functions/Noter';
+import { addToLocalCart } from '../functions/addToLocalCart'; // Importez la nouvelle fonction utilitaire
 
 function Main() {
   const { cartCount, updateCartCount } = useCart();
@@ -34,16 +35,36 @@ function Main() {
   };
 
   const fetchCartItemCount = async () => {
+    const localCart = JSON.parse(localStorage.getItem('localCart')) || [];
     try {
-      const accessToken = await getAccessTokenSilently();
-      const cartResponse = await fetch(`/api/paniers`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      const cartItemsData = await cartResponse.json();
-      const itemCount = cartItemsData?.lignesPanier?.length || 0;
-      updateCartCount(itemCount);
+      if (isAuthenticated) {
+        // Récupérer le nombre d'articles dans le panier distant
+        const accessToken = await getAccessTokenSilently();
+        const cartResponse = await fetch(`/api/paniers`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const cartItemsData = await cartResponse.json();
+        
+        // Ajouter les articles du panier local au panier distant
+        if (localCart.length > 0) {
+          await Promise.all(localCart.map(async (item) => {
+            await addToCart(item, cartItemsData, cartCount, updateCartCount, item.quantite, getAccessTokenSilently, setErrorMessage);
+          }));
+          
+          // Une fois tous les articles ajoutés au panier distant, vider le panier local
+          localStorage.removeItem('localCart');
+        }
+
+        // Mettre à jour le compteur du panier distant après l'ajout des articles locaux
+        const itemCount = cartItemsData?.lignesPanier?.length || 0;
+        updateCartCount(itemCount);
+      } else {
+        // Récupérer le nombre d'articles dans le panier local
+        const itemCount = localCart.length;
+        updateCartCount(itemCount);
+      }
     } catch (error) {
       console.error('Erreur lors de la récupération du panier', error);
     }
@@ -51,9 +72,7 @@ function Main() {
 
   useEffect(() => {
     // Récupérer le nombre d'articles dans le panier lors du chargement initial
-    if (isAuthenticated) {
-      fetchCartItemCount();
-    }
+    fetchCartItemCount();
   }, [isAuthenticated]); // Exécuter cette action lorsque l'utilisateur est authentifié
 
   const fetchInstruments = async (url) => {
@@ -122,14 +141,19 @@ function Main() {
       const cartItemsData = await cartResponse.json();
   
       // Appeler la fonction addToCart avec les données du panier récupérées
-      addToCart(selectedInstrument, cartItemsData, cartCount, updateCartCount, quantite, getAccessTokenSilently, setErrorMessage);
+      await addToCart(selectedInstrument, cartItemsData, cartCount, updateCartCount, quantite, getAccessTokenSilently, setErrorMessage);
+      
+     
     } catch (error) {
       console.error('Erreur lors de la récupération du panier', error);
-      console.log(cartCount)
-      
     }
   };
-  
+
+  const handleAddToLocalCart = () => {
+    addToLocalCart(selectedInstrument, quantite, updateCartCount);
+    console.log("Instrument ajouté au panier local", selectedInstrument);
+  };
+
 
   const handleDeleteInstrument = async (id) => {
     const accessToken = await getAccessTokenSilently();
@@ -169,19 +193,17 @@ function Main() {
             <InstrumentDetail
               handleCloseDetails={handleCloseDetails}
               selectedInstrument={selectedInstrument}
-              currentImageIndex={currentImageIndex}
               handleImageClick={handleImageClick}
-              selectedImageIndex={selectedImageIndex}
-              isImageModalOpen={isImageModalOpen}
-              handleCloseImageModal={handleCloseImageModal}
-              handleQuantiteChange={handleQuantiteChange}
+              isAdmin={isAdmin}
               handleUpdatedQuantiteChange={handleUpdatedQuantiteChange}
               handleUpdateInstrument={handleUpdateInstrument}
+              handleQuantiteChange={handleQuantiteChange}
               handleAddToCart={handleAddToCart}
-              isAdmin={isAdmin}
+              handleAddToLocalCart={handleAddToLocalCart}
               quantite={quantite}
               updatedQuantiteEnStock={updatedQuantiteEnStock}
               errorMessage={errorMessage}
+              isAuthenticated={isAuthenticated}
             />
           )}
 

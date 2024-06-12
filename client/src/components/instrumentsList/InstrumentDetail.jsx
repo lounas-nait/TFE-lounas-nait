@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { generateStars } from '../../functions/Etoile'; 
 import { Link } from 'react-router-dom';
 
-const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageClick, isAdmin, handleUpdatedQuantiteChange, handleUpdateInstrument, handleQuantiteChange, handleAddToCart, quantite, updatedQuantiteEnStock, errorMessage }) => {
+const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageClick, isAdmin, handleUpdatedQuantiteChange, handleUpdateInstrument, handleQuantiteChange, handleAddToCart, quantite, updatedQuantiteEnStock, errorMessage, isAuthenticated, handleAddToLocalCart }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const goToPreviousImage = () => {
@@ -47,9 +47,7 @@ const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageC
           <Link to={`/add-review/${selectedInstrument.id}`} className="text-blue-500 underline ml-2"> voir les avis</Link> 
         </div>
         <div className="flex items-center">
-          
           <p className='ml-2'>{selectedInstrument.prixTVA}</p>
-        
         </div>
         
         {isAdmin ? (
@@ -67,7 +65,11 @@ const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageC
               <label htmlFor="quantite" className="mr-2">Quantité:</label>
               <input type="number" id="quantite" name="quantite" min="1" max={selectedInstrument.quantiteEnStock} value={quantite} onChange={handleQuantiteChange} className="border border-gray-300 rounded-md px-2 py-1" />
             </div>
-            <button onClick={handleAddToCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier</button>
+            {isAuthenticated ? (
+              <button onClick={handleAddToCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier</button>
+            ) : (
+              <button onClick={handleAddToLocalCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier local</button>
+            )}
             {errorMessage && (
               <div className="text-red-500 mt-2">{errorMessage}</div>
             )}
