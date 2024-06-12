@@ -9,7 +9,7 @@ import LoginButton from '../../authentification/LoginButton';
 import SearchBar from './SearchBar';
 import InstrumentDetail from '../instrumentsList/InstrumentDetail';
 import handleUpdate from '../../functions/HandleUpdate';
-import { useNotification } from '../context/NotificationContext'; 
+import { useNotification } from '../context/NotificationContext';
 import ms from "../../images/ms.png"
 
 function TopBar({ setSearchQuery }) {
@@ -23,7 +23,7 @@ function TopBar({ setSearchQuery }) {
     const [notificationList, setNotificationList] = useState([]);
     const [openNotification, setOpenNotification] = useState(false);
     const { user, isAuthenticated, isLoading } = useAuth0();
-    const { notificationCount, updateNotificationCount } = useNotification(); 
+    const { notificationCount, updateNotificationCount } = useNotification();
 
     useEffect(() => {
         const fetchNotifications = async () => {
@@ -32,7 +32,7 @@ function TopBar({ setSearchQuery }) {
                 const instruments = await response.json();
                 const stockBasOrRupture = instruments.filter(instrument => instrument.quantiteEnStock <= 0 || instrument.quantiteEnStock <= 3);
                 setNotificationList(stockBasOrRupture);
-                updateNotificationCount(stockBasOrRupture.length); 
+                updateNotificationCount(stockBasOrRupture.length);
             } catch (error) {
                 console.error('Erreur lors de la récupération des notifications:', error);
             }
@@ -40,14 +40,14 @@ function TopBar({ setSearchQuery }) {
 
         const interval = setInterval(() => {
             fetchNotifications();
-        }, 600); 
+        }, 600);
 
         return () => clearInterval(interval);
     }, [updateNotificationCount]);
 
     const handleInstrumentClick = (instrument) => {
-        setSelectedInstrument(instrument); 
-        setOpenNotification(false); 
+        setSelectedInstrument(instrument);
+        setOpenNotification(false);
     };
 
     const handleQuantityChange = (e) => {
@@ -78,13 +78,7 @@ function TopBar({ setSearchQuery }) {
                         <div >
                             <div className="relative flex h-16 items-center justify-between">
                                 <div className="flex items-center space-x-4">
-                                   
-                                        
-                                            
-                                      
-                                           <img src={ms} alt="" className='h-10 w-50'/>
-                                       
-                                   
+                                    <img src={ms} alt="" className='h-10 w-50' />
                                 </div>
 
                                 <div className="flex-grow flex items-center justify-center">
@@ -95,19 +89,18 @@ function TopBar({ setSearchQuery }) {
                                     {isAuthenticated ? (
                                         <>
                                             <Menu as="div" className="relative z-50">
-                                                <Menu.Button className="flex items-center text-sm rounded-full text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                                                <Menu.Button className="flex items-center text-sm rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800"
+                                                    type="button"
+
+                                                    onClick={() => setOpenNotification(!openNotification)}>
                                                     <div className="relative">
-                                                        <button
-                                                            type="button"
-                                                            className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                                                            onClick={() => setOpenNotification(!openNotification)}
-                                                        >
-                                                            <span className="sr-only">View notifications</span>
-                                                            <BellIcon className="h-6 w-6" aria-hidden="true" />
-                                                            {notificationCount > 0 && (
-                                                                <span className="absolute top-2 right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">{notificationCount}</span>
-                                                            )}
-                                                        </button>
+
+                                                        <span className="sr-only">View notifications</span>
+                                                        <BellIcon className="h-6 w-6" aria-hidden="true" />
+                                                        {notificationCount > 0 && (
+                                                            <span className="absolute top-1 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">{notificationCount}</span>
+                                                        )}
+
                                                     </div>
                                                 </Menu.Button>
                                                 <Transition
@@ -123,20 +116,20 @@ function TopBar({ setSearchQuery }) {
                                                         {notificationList.length > 0 ? (
                                                             notificationList.map((notification, index) => (
                                                                 <Menu.Item key={index}>
-                                                                {({ active }) => (
-                                                                    <div className={`block px-4 py-2 text-sm cursor-pointer ${active ? 'bg-yellow-100' : ''}`} onClick={() => handleInstrumentClick(notification)}>
-                                                                        <div className="flex items-center">
-                                                                            <div className="flex-shrink-0 mr-2"> 
-                                                                                <ExclamationTriangleIcon class="h-6 w-6 text-yellow-500" />
-                                                                            </div>
-                                                                            <div>
-                                                                                {notification.nom} il reste {notification.quantiteEnStock} en stock
+                                                                    {({ active }) => (
+                                                                        <div className={`block px-4 py-2 text-sm cursor-pointer ${active ? 'bg-yellow-100' : ''}`} onClick={() => handleInstrumentClick(notification)}>
+                                                                            <div className="flex items-center">
+                                                                                <div className="flex-shrink-0 mr-2">
+                                                                                    <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500" />
+                                                                                </div>
+                                                                                <div>
+                                                                                    {notification.nom} il reste {notification.quantiteEnStock} en stock
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                )}
-                                                            </Menu.Item>
-                                                            
+                                                                    )}
+                                                                </Menu.Item>
+
                                                             ))
                                                         ) : (
                                                             <div className="block px-4 py-2 text-sm">

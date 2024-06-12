@@ -30,7 +30,18 @@ const CartitemsLocal = () => {
   const total = subTotal + shippingCost;
 
   if (!cartItems || cartItems.length === 0) {
-    return <div>Votre panier est vide.</div>;
+    return <div className='w-11/12 m-auto py-10'>
+      <h1 className='text-3xl font-bold'>Mon Panier</h1><br />
+    <p className='text-lg text-gray-500'>Votre panier est vide</p>
+    <div className='my-5'>
+      <NavLink to="/">
+        <button className='flex items-center space-x-3 bg-gray-200 font-semibold rounded p-2'>
+          <BsArrowLeft />
+          <span>Continuer les achats</span>
+        </button>
+      </NavLink>
+    </div>
+  </div>;
   }
 
   return (

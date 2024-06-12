@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 const handlePayment = async (
@@ -11,7 +10,8 @@ const handlePayment = async (
   getAccessTokenSilently,
   updateCartCount,
   setPaymentError,
-  setCardDetails
+  setCardDetails,
+  handlePaymentSuccess // Ajouter un paramètre pour gérer le succès de paiement
 ) => {
   if (!validatePaymentDetails()) {
     return; // Sortir de la fonction si les détails de paiement ne sont pas valides
@@ -78,6 +78,9 @@ const handlePayment = async (
 
     // Effacer les éventuelles erreurs de paiement
     setPaymentError(null);
+
+    // Appeler la fonction pour gérer le succès de paiement
+    handlePaymentSuccess();
 
   } catch (error) {
     console.error('Error during payment process:', error);
