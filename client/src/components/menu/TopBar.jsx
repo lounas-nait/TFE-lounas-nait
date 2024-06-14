@@ -1,8 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
-import { BellIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { NavLink } from 'react-router-dom';
+import { BellIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useAuth0 } from "@auth0/auth0-react";
 import LogoutButton from '../../authentification/LogoutButton';
 import LoginButton from '../../authentification/LoginButton';
@@ -24,46 +22,60 @@ function TopBar({ setSearchQuery }) {
     const [openNotification, setOpenNotification] = useState(false);
     const { user, isAuthenticated, isLoading } = useAuth0();
     const { notificationCount, updateNotificationCount } = useNotification();
+    const [quantite, setQuantite] = useState(1);
 
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const response = await fetch('/api/instruments');
+                const response = await fetch('/api/instruments?size=1000'); 
                 const instruments = await response.json();
-                const stockBasOrRupture = instruments.filter(instrument => instrument.quantiteEnStock <= 0 || instrument.quantiteEnStock <= 3);
+                const stockBasOrRupture = instruments.content.filter(instrument => instrument.quantiteEnStock <= 0 || instrument.quantiteEnStock <= 3);
                 setNotificationList(stockBasOrRupture);
                 updateNotificationCount(stockBasOrRupture.length);
             } catch (error) {
                 console.error('Erreur lors de la récupération des notifications:', error);
             }
         };
-
+    
         const interval = setInterval(() => {
             fetchNotifications();
         }, 600);
-
+    
         return () => clearInterval(interval);
     }, [updateNotificationCount]);
 
     const handleInstrumentClick = (instrument) => {
         setSelectedInstrument(instrument);
         setOpenNotification(false);
+        setQuantite(1);
+        setUpdatedQuantiteEnStock(instrument.quantiteEnStock);
     };
 
-    const handleQuantityChange = (e) => {
-        const value = parseInt(e.target.value, 10);
-        setSelectedInstrument(prevInstrument => ({
-            ...prevInstrument,
-            quantiteEnStock: value
-        }));
-    };
-
-    const handleUpdatedQuantityChange = (e) => {
+    const handleUpdatedQuantiteChange = (e) => {
         setUpdatedQuantiteEnStock(parseInt(e.target.value, 10));
+        console.log(updatedQuantiteEnStock)
     };
 
+    const handleQuantiteChange = (e) => {
+        const value = parseInt(e.target.value, 10);
+        setQuantite(value);
+    };
+    
+    const searchURL = `/api/instruments?size=1000`;
+    
     const handleUpdateInstrument = async () => {
-        handleUpdate(selectedInstrument, updatedQuantiteEnStock, getAccessTokenSilently, '/api/instruments', setSelectedInstrument);
+    
+        try {
+            await handleUpdate(
+                selectedInstrument,
+                updatedQuantiteEnStock,
+                getAccessTokenSilently,
+                searchURL,
+                setSelectedInstrument
+            );
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour de l\'instrument:', error);
+        }
     };
 
     if (isLoading) {
@@ -75,7 +87,7 @@ function TopBar({ setSearchQuery }) {
             <Disclosure as="nav" className="bg-gradient-to-r  from-gray-700 from-5% via-stone-500 via-60% to-amber-800 to-80% fixed top-0 left-16 right-0 z-50">
                 {({ open }) => (
                     <>
-                        <div >
+                        <div>
                             <div className="relative flex h-16 items-center justify-between">
                                 <div className="flex items-center space-x-4">
                                     <img src={ms} alt="" className='h-10 w-50' />
@@ -91,16 +103,13 @@ function TopBar({ setSearchQuery }) {
                                             <Menu as="div" className="relative z-50">
                                                 <Menu.Button className="flex items-center text-sm rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800"
                                                     type="button"
-
                                                     onClick={() => setOpenNotification(!openNotification)}>
                                                     <div className="relative">
-
                                                         <span className="sr-only">View notifications</span>
                                                         <BellIcon className="h-6 w-6" aria-hidden="true" />
                                                         {notificationCount > 0 && (
                                                             <span className="absolute top-1 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">{notificationCount}</span>
                                                         )}
-
                                                     </div>
                                                 </Menu.Button>
                                                 <Transition
@@ -129,14 +138,12 @@ function TopBar({ setSearchQuery }) {
                                                                         </div>
                                                                     )}
                                                                 </Menu.Item>
-
                                                             ))
                                                         ) : (
                                                             <div className="block px-4 py-2 text-sm">
                                                                 Pas de notifications
                                                             </div>
                                                         )}
-
                                                     </Menu.Items>
                                                 </Transition>
                                             </Menu>
@@ -195,9 +202,10 @@ function TopBar({ setSearchQuery }) {
                     selectedInstrument={selectedInstrument}
                     handleCloseDetails={() => setSelectedInstrument(null)}
                     isAdmin={isAuthenticated && user.email.startsWith('admin')}
-                    handleQuantityChange={handleQuantityChange}
-                    handleUpdatedQuantityChange={handleUpdatedQuantityChange}
+                    handleQuantityChange={handleQuantiteChange}
+                    handleUpdatedQuantiteChange={handleUpdatedQuantiteChange}
                     handleUpdateInstrument={handleUpdateInstrument}
+                    updatedQuantiteEnStock={updatedQuantiteEnStock}
                 />
             )}
         </>
@@ -205,3 +213,4 @@ function TopBar({ setSearchQuery }) {
 }
 
 export default TopBar;
+

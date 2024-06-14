@@ -4,6 +4,7 @@ import { AiFillDelete } from 'react-icons/ai';
 import { BsArrowLeft } from 'react-icons/bs';
 import { NavLink } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import LoginButton from '../../authentification/LoginButton';
 
 const CartitemsLocal = () => {
   const { cartCount, updateCartCount } = useCart();
@@ -120,9 +121,12 @@ const CartitemsLocal = () => {
               <h1 className='text-xl'>Total</h1>
               <p>{total} €</p>
             </div>
-            <button className='w-full p-2 bg-gray-800 text-center text-white rounded'>
-              <NavLink to={"/paymentForm"}>Passer la commande</NavLink>
-            </button>
+            <div>
+              <p>connetez vous pour finaliser vos achats</p>
+            </div>
+            <div className='w-full p-2 bg-gray-800 text-center text-white rounded'>
+              <LoginButton />
+            </div>
           </div>
         </section>
       </div>

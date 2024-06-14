@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { generateStars } from '../../functions/Etoile'; 
 import { Link } from 'react-router-dom';
+import stockStatus from '../../functions/StockStatus';
 
 const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageClick, isAdmin, handleUpdatedQuantiteChange, handleUpdateInstrument, handleQuantiteChange, handleAddToCart, quantite, updatedQuantiteEnStock, errorMessage, isAuthenticated, handleAddToLocalCart }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -21,7 +22,7 @@ const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageC
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <h1 className="text-3xl font-semibold mb-4">{selectedInstrument.nom}</h1>
+        <h1 className="text-3xl font-semibold mb-4">{selectedInstrument.nom} ({selectedInstrument.marque})</h1>
         <div className="relative">
           <button onClick={goToPreviousImage} className="absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-gray-200 text-gray-600 hover:text-gray-800 hover:bg-gray-300">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,8 +48,12 @@ const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageC
           <Link to={`/add-review/${selectedInstrument.id}`} className="text-blue-500 underline ml-2"> voir les avis</Link> 
         </div>
         <div className="flex items-center">
-          <p className='ml-2'>{selectedInstrument.prixTVA}</p>
+        <p className='text-xl font-bold'>{selectedInstrument.prixTVA} euro</p>
         </div>
+        <div className='text-sm'>
+              {stockStatus(selectedInstrument.quantiteEnStock)}
+            </div>
+        
         
         {isAdmin ? (
           <>
@@ -68,7 +73,7 @@ const InstrumentDetail = ({ handleCloseDetails, selectedInstrument, handleImageC
             {isAuthenticated ? (
               <button onClick={handleAddToCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier</button>
             ) : (
-              <button onClick={handleAddToLocalCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier local</button>
+              <button onClick={handleAddToLocalCart} className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700">Ajouter au panier</button>
             )}
             {errorMessage && (
               <div className="text-red-500 mt-2">{errorMessage}</div>

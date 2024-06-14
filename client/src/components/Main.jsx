@@ -10,7 +10,8 @@ import addToCart from '../functions/AddToCart';
 import handleUpdate from '../functions/HandleUpdate';
 import { useCart } from './context/CartContext';
 import { calculMoyenne } from '../functions/Noter';
-import { addToLocalCart } from '../functions/addToLocalCart'; // Importez la nouvelle fonction utilitaire
+import { addToLocalCart } from '../functions/addToLocalCart';
+import PaginationControls from './instrumentsList/PaginationControl';
 
 function Main() {
   const { cartCount, updateCartCount } = useCart();
@@ -26,6 +27,8 @@ function Main() {
   const [updatedQuantiteEnStock, setUpdatedQuantiteEnStock] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [favoriteInstruments, setFavoriteInstruments] = useState({});
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const toggleFavorite = (instrumentId) => {
     setFavoriteInstruments((prevFavorites) => {
@@ -76,21 +79,21 @@ function Main() {
   }, [isAuthenticated]); // Exécuter cette action lorsque l'utilisateur est authentifié
 
   const fetchInstruments = async (url) => {
-    let requestURL = url;
-    return fetch(requestURL, {
+    return fetch(url, {
       headers: {
         Accept: 'application/json',
       },
     }).then((r) => r.json());
   };
 
-  const searchURL = `/api/instruments?q=${searchQuery}${selectedCategory ? `&categorie=${selectedCategory}` : ''}`;
+  const searchURL = `/api/instruments?q=${searchQuery}${selectedCategory ? `&categorie=${selectedCategory}` : ''}&page=${currentPage}&size=10`;
   const { data: instruments, error, isValidating } = useSWR(searchURL, fetchInstruments);
 
   useEffect(() => {
     if (instruments) {
-      const updatedInstruments = calculMoyenne(instruments);
+      const updatedInstruments = calculMoyenne(instruments.content || []);
       setInstrumentsWithAvgRating(updatedInstruments);
+      setTotalPages(instruments.totalPages);
     }
   }, [instruments]);
 
@@ -143,7 +146,6 @@ function Main() {
       // Appeler la fonction addToCart avec les données du panier récupérées
       await addToCart(selectedInstrument, cartItemsData, cartCount, updateCartCount, quantite, getAccessTokenSilently, setErrorMessage);
       
-     
     } catch (error) {
       console.error('Erreur lors de la récupération du panier', error);
     }
@@ -153,7 +155,6 @@ function Main() {
     addToLocalCart(selectedInstrument, quantite, updateCartCount);
     console.log("Instrument ajouté au panier local", selectedInstrument);
   };
-
 
   const handleDeleteInstrument = async (id) => {
     const accessToken = await getAccessTokenSilently();
@@ -167,6 +168,18 @@ function Main() {
       mutate(searchURL);
     } catch (error) {
       console.error('Erreur lors de la suppression de l\'instrument', error);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -224,6 +237,14 @@ function Main() {
               handleDelete={handleDeleteInstrument}
             />
           </div>
+          <div className="pagination-controls flex justify-center items-center mt-8 mb-8">
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                handlePrevPage={handlePrevPage}
+                handleNextPage={handleNextPage}
+              />
+            </div>
         </>
       )}
     </div>

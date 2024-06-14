@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CiShoppingCart } from 'react-icons/ci';
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
 import { AiFillDelete } from 'react-icons/ai';
 import { generateStars } from '../../functions/Etoile';
+import stockStatus from '../../functions/StockStatus';
 
 function ProductList({ products, handleClick, favoriteInstruments, isAdmin, handleDelete }) {
   const [localFavoriteInstruments, setLocalFavoriteInstruments] = useState({});
@@ -12,16 +13,6 @@ function ProductList({ products, handleClick, favoriteInstruments, isAdmin, hand
       const isCurrentlyFavorite = prevFavorites[instrumentId];
       return { ...prevFavorites, [instrumentId]: !isCurrentlyFavorite };
     });
-  };
-
-  const getStockStatus = (quantity) => {
-    if (quantity > 3) {
-      return <span className="text-green-500">En stock</span>;
-    } else if (quantity > 0) {
-      return <span className="text-orange-500">Plus que {quantity} en stock</span>;
-    } else {
-      return <span className="text-red-500">En rupture de stock</span>;
-    }
   };
 
   return (
@@ -35,7 +26,7 @@ function ProductList({ products, handleClick, favoriteInstruments, isAdmin, hand
             <div className='m-2 bg-gray-100 p-2'>
               <h1 className='text-xl font-semibold'>{product.nom}</h1>
               <div className='text-sm'>
-              {getStockStatus(product.quantiteEnStock)}
+              {stockStatus(product.quantiteEnStock)}
             </div>
               <p className='text-sm'> {generateStars(product.averageRating)}</p>
               <div className='flex justify-between items-center'>
@@ -67,4 +58,3 @@ function ProductList({ products, handleClick, favoriteInstruments, isAdmin, hand
 }
 
 export default ProductList;
-

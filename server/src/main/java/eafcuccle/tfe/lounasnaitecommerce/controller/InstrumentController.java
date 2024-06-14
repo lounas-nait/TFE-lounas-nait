@@ -15,11 +15,14 @@ import eafcuccle.tfe.lounasnaitecommerce.dto.InstrumentDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -56,24 +59,23 @@ public class InstrumentController {
     }
 
     @GetMapping("/api/instruments")
-    public ResponseEntity<List<Instrument>> getAllInstruments(
+    public ResponseEntity<Page<Instrument>> getAllInstruments(
             @RequestParam(required = false) String q,
-            @RequestParam(required = false) String categorie) {
-        List<Instrument> instruments;
+            @RequestParam(required = false) String categorie,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Instrument> instruments;
+
         if (StringUtils.hasText(q)) {
-            System.out.println(q);
-            // Si un paramètre de recherche est fourni, filtrer les instruments par nom
-            instruments = instrumentRepository.findByNomContainingIgnoreCase(q);
+            instruments = instrumentRepository.findByNomContainingIgnoreCase(q, pageable);
         } else if (categorie != null) {
             int categorieId = Integer.parseInt(categorie);
-            // Si un paramètre de catégorie est fourni, filtrer les instruments par
-            // catégorie
-            instruments = instrumentRepository.findByCategorieId(categorieId);
-            System.out.println(categorieId);
+            instruments = instrumentRepository.findByCategorieId(categorieId, pageable);
         } else {
-            // Sinon, récupérer tous les instruments
-            instruments = instrumentRepository.findAll();
+            instruments = instrumentRepository.findAll(pageable);
         }
+
         return ResponseEntity.ok(instruments);
     }
 

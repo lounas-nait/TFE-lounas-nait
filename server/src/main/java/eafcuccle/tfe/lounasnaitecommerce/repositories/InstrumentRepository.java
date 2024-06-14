@@ -1,18 +1,14 @@
 package eafcuccle.tfe.lounasnaitecommerce.repositories;
 
-import eafcuccle.tfe.lounasnaitecommerce.classes.Categorie;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
-import eafcuccle.tfe.lounasnaitecommerce.classes.LignePanier;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import java.util.UUID;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface InstrumentRepository extends JpaRepository<Instrument, UUID> {
@@ -24,4 +20,9 @@ public interface InstrumentRepository extends JpaRepository<Instrument, UUID> {
 
     Optional<Instrument> findById(UUID id);
 
+    Page<Instrument> findAll(Pageable pageable);
+
+    Page<Instrument> findByNomContainingIgnoreCase(String nom, Pageable pageable);
+
+    Page<Instrument> findByCategorieId(int categorieId, Pageable pageable);
 }
