@@ -2,11 +2,12 @@ package eafcuccle.tfe.lounasnaitecommerce.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import eafcuccle.tfe.lounasnaitecommerce.classes.*;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.*;
+import eafcuccle.tfe.lounasnaitecommerce.services.EmailAnnulationService;
+import eafcuccle.tfe.lounasnaitecommerce.services.EmailLivraisonService;
 import eafcuccle.tfe.lounasnaitecommerce.services.EmailService;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +34,8 @@ public class CommandeController {
     private final LignePanierRepository lignePanierRepository;
     private final FactureRepository factureRepository;
     private final EmailService emailService;
+    private final EmailLivraisonService emailLivraisonService;
+    private final EmailAnnulationService emailAnnulationService;
 
     private static final Logger logger = LoggerFactory.getLogger(PanierController.class);
 
@@ -45,7 +47,9 @@ public class CommandeController {
             PanierRepository panierRepository,
             LignePanierRepository lignePanierRepository,
             FactureRepository factureRepository,
-            EmailService emailService) {
+            EmailService emailService,
+            EmailLivraisonService emailLivraisonService,
+            EmailAnnulationService emailAnnulationService) {
         this.clientRepository = clientRepository;
         this.ligneCommandeRepository = ligneCommandeRepository;
         this.commandeRepository = commandeRepository;
@@ -54,6 +58,8 @@ public class CommandeController {
         this.lignePanierRepository = lignePanierRepository;
         this.factureRepository = factureRepository;
         this.emailService = emailService;
+        this.emailLivraisonService = emailLivraisonService;
+        this.emailAnnulationService = emailAnnulationService;
     }
 
     @GetMapping("/api/commandes")
@@ -166,6 +172,52 @@ public class CommandeController {
             lignePanierRepository.delete(lignePanier);
             logger.info("ligne supprimée : {}", lignePanier);
             return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/api/commandes/{id}")
+    @Transactional
+    public ResponseEntity<Void> deleteCommande(@PathVariable UUID id) {
+        Optional<Commande> commandeOptional = commandeRepository.findById(id);
+        if (commandeOptional.isPresent()) {
+            Commande commande = commandeOptional.get();
+            ligneCommandeRepository.deleteByCommande(commande);
+            commandeRepository.delete(commande);
+            logger.info("Commande supprimée : {}", commande);
+
+            // Envoyer l'e-mail d'annulation
+            try {
+                emailAnnulationService.sendAnnulationEmail(commande);
+            } catch (MessagingException e) {
+                logger.error("Failed to send annulation email for commande : {}", commande, e);
+            }
+
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/api/commandes/{id}")
+    public ResponseEntity<Commande> updateCommande(@PathVariable UUID id,
+            @RequestBody Commande updateCommande) {
+        Optional<Commande> commandeOptional = commandeRepository.findById(id);
+        if (commandeOptional.isPresent()) {
+            Commande commande = commandeOptional.get();
+
+            if (commande.getStatut().equals("confirmé")) {
+                commande.setStatut("en livraison");
+                try {
+                    emailLivraisonService.sendLivraisonConfirmationEmail(commande);
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            Commande updatedCommande = commandeRepository.save(commande);
+            return ResponseEntity.ok(updatedCommande);
         } else {
             return ResponseEntity.notFound().build();
         }

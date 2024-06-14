@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import eafcuccle.tfe.lounasnaitecommerce.classes.LignePanier;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Panier;
+import eafcuccle.tfe.lounasnaitecommerce.classes.Commande;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
 import eafcuccle.tfe.lounasnaitecommerce.classes.LigneCommande;
 
@@ -16,4 +17,6 @@ public interface LigneCommandeRepository extends JpaRepository<LigneCommande, UU
     Optional<LigneCommande> findById(UUID id);
 
     void deleteByInstrument(Instrument instrument);
+
+    void deleteByCommande(Commande commande);
 }
