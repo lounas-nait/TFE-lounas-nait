@@ -29,6 +29,7 @@ function Main() {
   const [favoriteInstruments, setFavoriteInstruments] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [updatedPrixTVA, setUpdatedPrixTVA] = useState(0);
 
   const toggleFavorite = (instrumentId) => {
     setFavoriteInstruments((prevFavorites) => {
@@ -41,7 +42,6 @@ function Main() {
     const localCart = JSON.parse(localStorage.getItem('localCart')) || [];
     try {
       if (isAuthenticated) {
-        // Récupérer le nombre d'articles dans le panier distant
         const accessToken = await getAccessTokenSilently();
         const cartResponse = await fetch(`/api/paniers`, {
           headers: {
@@ -49,22 +49,18 @@ function Main() {
           },
         });
         const cartItemsData = await cartResponse.json();
-        
-        // Ajouter les articles du panier local au panier distant
+
         if (localCart.length > 0) {
           await Promise.all(localCart.map(async (item) => {
             await addToCart(item, cartItemsData, cartCount, updateCartCount, item.quantite, getAccessTokenSilently, setErrorMessage);
           }));
           
-          // Une fois tous les articles ajoutés au panier distant, vider le panier local
           localStorage.removeItem('localCart');
         }
 
-        // Mettre à jour le compteur du panier distant après l'ajout des articles locaux
         const itemCount = cartItemsData?.lignesPanier?.length || 0;
         updateCartCount(itemCount);
       } else {
-        // Récupérer le nombre d'articles dans le panier local
         const itemCount = localCart.length;
         updateCartCount(itemCount);
       }
@@ -74,9 +70,8 @@ function Main() {
   };
 
   useEffect(() => {
-    // Récupérer le nombre d'articles dans le panier lors du chargement initial
     fetchCartItemCount();
-  }, [isAuthenticated]); // Exécuter cette action lorsque l'utilisateur est authentifié
+  }, [isAuthenticated]);
 
   const fetchInstruments = async (url) => {
     return fetch(url, {
@@ -102,6 +97,7 @@ function Main() {
     setCurrentImageIndex(0);
     setQuantite(1);
     setUpdatedQuantiteEnStock(instrument.quantiteEnStock);
+    setUpdatedPrixTVA(instrument.prixTVA); 
     setErrorMessage('');
   };
 
@@ -129,8 +125,12 @@ function Main() {
     setUpdatedQuantiteEnStock(parseInt(e.target.value, 10));
   };
 
+  const handleUpdatedPriceChange = (e) => {
+    setUpdatedPrixTVA(parseFloat(e.target.value));
+  };
+
   const handleUpdateInstrument = async () => {
-    handleUpdate(selectedInstrument, updatedQuantiteEnStock, getAccessTokenSilently, searchURL, setSelectedInstrument, setErrorMessage);
+    handleUpdate(selectedInstrument, updatedQuantiteEnStock, updatedPrixTVA, getAccessTokenSilently, searchURL, setSelectedInstrument, setErrorMessage);
   };
 
   const handleAddToCart = async () => {
@@ -142,8 +142,7 @@ function Main() {
         },
       });
       const cartItemsData = await cartResponse.json();
-  
-      // Appeler la fonction addToCart avec les données du panier récupérées
+
       await addToCart(selectedInstrument, cartItemsData, cartCount, updateCartCount, quantite, getAccessTokenSilently, setErrorMessage);
       
     } catch (error) {
@@ -153,7 +152,6 @@ function Main() {
 
   const handleAddToLocalCart = () => {
     addToLocalCart(selectedInstrument, quantite, updateCartCount, setErrorMessage);
-    console.log("Instrument ajouté au panier local", selectedInstrument);
   };
 
   const handleDeleteInstrument = async (id) => {
@@ -217,6 +215,8 @@ function Main() {
               updatedQuantiteEnStock={updatedQuantiteEnStock}
               errorMessage={errorMessage}
               isAuthenticated={isAuthenticated}
+              handleUpdatedPriceChange={handleUpdatedPriceChange}
+              updatedPrixTVA={updatedPrixTVA} 
             />
           )}
 
@@ -238,17 +238,17 @@ function Main() {
             />
           </div>
           <div className="pagination-controls flex justify-center items-center mt-8 mb-8">
-              <PaginationControls
-                currentPage={currentPage}
-                totalPages={totalPages}
-                handlePrevPage={handlePrevPage}
-                handleNextPage={handleNextPage}
-              />
-            </div>
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              handlePrevPage={handlePrevPage}
+              handleNextPage={handleNextPage}
+            />
+          </div>
         </>
-      )}
-    </div>
-  );
+  )}
+  </div>
+);
 }
 
 export default Main;

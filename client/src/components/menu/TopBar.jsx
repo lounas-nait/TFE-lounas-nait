@@ -8,21 +8,21 @@ import SearchBar from './SearchBar';
 import InstrumentDetail from '../instrumentsList/InstrumentDetail';
 import handleUpdate from '../../functions/HandleUpdate';
 import { useNotification } from '../context/NotificationContext';
-import ms from "../../images/ms.png"
+import ms from "../../images/ms.png";
 
 function TopBar({ setSearchQuery }) {
     const handleSearchChange = (query) => {
         setSearchQuery(query);
     };
 
-    const { getAccessTokenSilently } = useAuth0();
+    const { getAccessTokenSilently, user, isAuthenticated, isLoading } = useAuth0();
     const [updatedQuantiteEnStock, setUpdatedQuantiteEnStock] = useState(0);
     const [selectedInstrument, setSelectedInstrument] = useState(null);
     const [notificationList, setNotificationList] = useState([]);
     const [openNotification, setOpenNotification] = useState(false);
-    const { user, isAuthenticated, isLoading } = useAuth0();
     const { notificationCount, updateNotificationCount } = useNotification();
     const [quantite, setQuantite] = useState(1);
+    const [updatedPrixTVA, setUpdatedPrixTVA] = useState(0);
 
     useEffect(() => {
         const fetchNotifications = async () => {
@@ -49,26 +49,31 @@ function TopBar({ setSearchQuery }) {
         setOpenNotification(false);
         setQuantite(1);
         setUpdatedQuantiteEnStock(instrument.quantiteEnStock);
+        setUpdatedPrixTVA(instrument.prixTVA);
     };
 
     const handleUpdatedQuantiteChange = (e) => {
         setUpdatedQuantiteEnStock(parseInt(e.target.value, 10));
-        console.log(updatedQuantiteEnStock)
     };
 
     const handleQuantiteChange = (e) => {
         const value = parseInt(e.target.value, 10);
         setQuantite(value);
     };
+
+    const handleUpdatedPriceChange = (e) => {
+        const value = parseInt(e.target.value, 10);
+        setUpdatedPrixTVA(value);
+    };
     
     const searchURL = `/api/instruments?size=1000`;
     
     const handleUpdateInstrument = async () => {
-    
         try {
             await handleUpdate(
                 selectedInstrument,
                 updatedQuantiteEnStock,
+                updatedPrixTVA,
                 getAccessTokenSilently,
                 searchURL,
                 setSelectedInstrument
@@ -206,6 +211,8 @@ function TopBar({ setSearchQuery }) {
                     handleUpdatedQuantiteChange={handleUpdatedQuantiteChange}
                     handleUpdateInstrument={handleUpdateInstrument}
                     updatedQuantiteEnStock={updatedQuantiteEnStock}
+                    updatedPrixTVA={updatedPrixTVA}
+                    handleUpdatedPriceChange={handleUpdatedPriceChange}
                 />
             )}
         </>

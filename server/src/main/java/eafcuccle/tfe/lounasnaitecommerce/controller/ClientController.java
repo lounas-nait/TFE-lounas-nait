@@ -60,9 +60,9 @@ public class ClientController {
         Optional<Client> client = clientRepository.findById(idClient);
 
         if (client.isPresent()) {
-            return ResponseEntity.ok(client.get()); // Retourner le client avec succès
+            return ResponseEntity.ok(client.get());
         } else {
-            return ResponseEntity.notFound().build(); // Retourner une réponse 404 si le client n'est pas trouvé
+            return ResponseEntity.notFound().build();
         }
     }
 

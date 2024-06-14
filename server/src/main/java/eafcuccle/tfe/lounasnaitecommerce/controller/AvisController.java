@@ -3,41 +3,21 @@ package eafcuccle.tfe.lounasnaitecommerce.controller;
 import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import eafcuccle.tfe.lounasnaitecommerce.classes.Avis;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
-import eafcuccle.tfe.lounasnaitecommerce.classes.Avis;
-import eafcuccle.tfe.lounasnaitecommerce.classes.Panier;
-
-import eafcuccle.tfe.lounasnaitecommerce.classes.Categorie;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Client;
-import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
-import eafcuccle.tfe.lounasnaitecommerce.classes.LignePanier;
-import eafcuccle.tfe.lounasnaitecommerce.classes.Panier;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.AvissRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.ClientRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.InstrumentRepository;
-import eafcuccle.tfe.lounasnaitecommerce.repositories.PanierRepository;
-import eafcuccle.tfe.lounasnaitecommerce.repositories.UtilisateurRepository;
-import eafcuccle.tfe.lounasnaitecommerce.repositories.LignePanierRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.security.core.Authentication;
 
-import java.net.URI;
-import java.util.UUID;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 
@@ -46,8 +26,6 @@ public class AvisController {
     private final ClientRepository clientRepository;
     private final AvissRepository avissRepository;
     private final InstrumentRepository instrumentRepository;
-
-    private static final Logger logger = LoggerFactory.getLogger(PanierController.class);
 
     @Autowired
     public AvisController(ClientRepository clientRepository,

@@ -37,7 +37,6 @@ public class InstrumentController {
     private final InstrumentRepository instrumentRepository;
     private final CategorieRepository categorieRepository;
     private final ImageRepository imageRepository;
-    private final PanierRepository panierRepository;
     private final AvissRepository avissRepository;
     private final LigneCommandeRepository ligneCommandeRepository;
     private final LignePanierRepository lignePanierRepository;
@@ -46,13 +45,12 @@ public class InstrumentController {
 
     @Autowired
     public InstrumentController(InstrumentRepository instrumentRepository, CategorieRepository categorieRepository,
-            ImageRepository imageRepository, PanierRepository panierRepository, AvissRepository avissRepository,
+            ImageRepository imageRepository, AvissRepository avissRepository,
             LigneCommandeRepository ligneCommandeRepository,
             LignePanierRepository lignePanierRepository) {
         this.instrumentRepository = instrumentRepository;
         this.categorieRepository = categorieRepository;
         this.imageRepository = imageRepository;
-        this.panierRepository = panierRepository;
         this.avissRepository = avissRepository;
         this.ligneCommandeRepository = ligneCommandeRepository;
         this.lignePanierRepository = lignePanierRepository;
@@ -182,6 +180,7 @@ public class InstrumentController {
         if (instrumentOptional.isPresent()) {
             Instrument instrument = instrumentOptional.get();
             instrument.setQuantiteEnStock(updateInstrument.getQuantiteEnStock());
+            instrument.setPrixTVA(updateInstrument.getPrixTVA());
 
             Instrument updatedInstrument = instrumentRepository.save(instrument);
             return ResponseEntity.ok(updatedInstrument);
