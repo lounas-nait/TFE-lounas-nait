@@ -11,10 +11,10 @@ const handlePayment = async (
   updateCartCount,
   setPaymentError,
   setCardDetails,
-  handlePaymentSuccess // Ajouter un paramètre pour gérer le succès de paiement
+  handlePaymentSuccess
 ) => {
   if (!validatePaymentDetails()) {
-    return; // Sortir de la fonction si les détails de paiement ne sont pas valides
+    return;
   }
 
   try {

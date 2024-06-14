@@ -56,14 +56,26 @@ const PaymentForm = () => {
   const total = subTotal + shippingCost;
 
   const validatePaymentDetails = () => {
-    if (
-      cardDetails.nameOnCard.trim() === '' ||
-      cardDetails.cardNumber.trim() === '' ||
-      cardDetails.expirationMonth.trim() === '' ||
-      cardDetails.expirationYear.trim() === '' ||
-      cardDetails.securityCode.trim() === ''
-    ) {
-      setPaymentError('Veuillez remplir tous les champs de paiement.');
+    // Expressions régulières pour la validation
+    const cardNumberRegex = /^[0-9]{4} [0-9]{4} [0-9]{4} [0-9]{4}$/;
+    const cvvRegex = /^[0-9]{3}$/;
+    const nameOnCardRegex = /^[a-zA-Z\s]*$/; // Permet seulement des lettres et espaces
+
+    // Validation du nom sur la carte
+    if (!nameOnCardRegex.test(cardDetails.nameOnCard.trim())) {
+      setPaymentError('Veuillez entrer un nom sur la carte valide.');
+      return false;
+    }
+
+    // Validation du numéro de carte
+    if (!cardNumberRegex.test(cardDetails.cardNumber.trim())) {
+      setPaymentError('Veuillez entrer un numéro de carte valide (format: 0000 0000 0000 0000).');
+      return false;
+    }
+
+    // Validation du CVV
+    if (!cvvRegex.test(cardDetails.securityCode.trim())) {
+      setPaymentError('Veuillez entrer un code de sécurité (CVV) valide (3 chiffres).');
       return false;
     }
 
@@ -89,13 +101,13 @@ const PaymentForm = () => {
               <div className="px-3 md:w-7/12 lg:pr-10">
                 {cartItems.length === 0 ? (
                   <div className='my-5'>
-                  <NavLink to="/">
-                    <button className='flex items-center space-x-3 bg-gray-200 font-semibold rounded p-2'>
-                      <BsArrowLeft />
-                      <span>Continuer les achats</span>
-                    </button>
-                  </NavLink>
-                </div>
+                    <NavLink to="/">
+                      <button className='flex items-center space-x-3 bg-gray-200 font-semibold rounded p-2'>
+                        <BsArrowLeft />
+                        <span>Continuer les achats</span>
+                      </button>
+                    </NavLink>
+                  </div>
                 ) : (
                   <>
                     {cartItems.map((item, index) => (
@@ -171,7 +183,7 @@ const PaymentForm = () => {
                             <label className="text-gray-600 font-semibold text-sm mb-2 ml-1">Name on card</label>
                             <div>
                               <input
-                                className="w-full px-3 py-2 mb-1 border border-gray-200 rounded-md focus:outline-none focus:border-indigo-500 transition-colors"
+                                className="w-full px-3 py-2 mb-1 border border-gray-200 rounded-md focus                                 :outline-none focus:border-indigo-500 transition-colors"
                                 placeholder="NAIT YOUCEF Lounas"
                                 type="text"
                                 name="nameOnCard"
@@ -253,19 +265,21 @@ const PaymentForm = () => {
                     {paymentError && <div className="text-red-500 mb-4">{paymentError}</div>}
                     <button
                       onClick={() => {
-                        handlePayment(
-                          cardDetails,
-                          validatePaymentDetails,
-                          clientId,
-                          cartItems,
-                          total,
-                          today,
-                          getAccessTokenSilently,
-                          updateCartCount,
-                          setPaymentError,
-                          setCardDetails,
-                          handlePaymentSuccess // Passer la fonction de gestion du succès du paiement à handlePayment
-                        );
+                        if (validatePaymentDetails()) {
+                          handlePayment(
+                            cardDetails,
+                            validatePaymentDetails,
+                            clientId,
+                            cartItems,
+                            total,
+                            today,
+                            getAccessTokenSilently,
+                            updateCartCount,
+                            setPaymentError,
+                            setCardDetails,
+                            handlePaymentSuccess
+                          );
+                        }
                       }}
                       className="block w-full max-w-xs mx-auto bg-indigo-500 hover focus text-white rounded-lg px-3 py-2 font-semibold"
                     >
@@ -341,3 +355,4 @@ const PaymentForm = () => {
 };
 
 export default PaymentForm;
+
