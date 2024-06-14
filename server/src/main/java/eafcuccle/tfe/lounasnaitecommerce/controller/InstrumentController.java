@@ -6,7 +6,6 @@ import eafcuccle.tfe.lounasnaitecommerce.classes.Image;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.InstrumentRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.LigneCommandeRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.LignePanierRepository;
-import eafcuccle.tfe.lounasnaitecommerce.repositories.PanierRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.AvissRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.CategorieRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.ImageRepository;

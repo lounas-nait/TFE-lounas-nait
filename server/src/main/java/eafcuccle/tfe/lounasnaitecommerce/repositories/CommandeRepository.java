@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import eafcuccle.tfe.lounasnaitecommerce.classes.Client;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Commande;
-import eafcuccle.tfe.lounasnaitecommerce.classes.Panier;
 
 @Repository
 public interface CommandeRepository extends JpaRepository<Commande, UUID> {

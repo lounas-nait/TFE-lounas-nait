@@ -30,7 +30,6 @@ public class CommandeController {
     private final LigneCommandeRepository ligneCommandeRepository;
     private final CommandeRepository commandeRepository;
     private final PanierRepository panierRepository;
-    private final InstrumentRepository instrumentRepository;
     private final LignePanierRepository lignePanierRepository;
     private final FactureRepository factureRepository;
     private final EmailService emailService;
@@ -43,7 +42,6 @@ public class CommandeController {
     public CommandeController(ClientRepository clientRepository,
             CommandeRepository commandeRepository,
             LigneCommandeRepository ligneCommandeRepository,
-            InstrumentRepository instrumentRepository,
             PanierRepository panierRepository,
             LignePanierRepository lignePanierRepository,
             FactureRepository factureRepository,
@@ -53,7 +51,6 @@ public class CommandeController {
         this.clientRepository = clientRepository;
         this.ligneCommandeRepository = ligneCommandeRepository;
         this.commandeRepository = commandeRepository;
-        this.instrumentRepository = instrumentRepository;
         this.panierRepository = panierRepository;
         this.lignePanierRepository = lignePanierRepository;
         this.factureRepository = factureRepository;

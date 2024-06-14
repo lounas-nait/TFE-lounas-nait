@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Avis;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
-import eafcuccle.tfe.lounasnaitecommerce.classes.LignePanier;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Client;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.AvissRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.ClientRepository;
@@ -16,8 +15,6 @@ import eafcuccle.tfe.lounasnaitecommerce.repositories.InstrumentRepository;
 import eafcuccle.tfe.lounasnaitecommerce.services.EmailAvertissementService;
 import jakarta.mail.MessagingException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
