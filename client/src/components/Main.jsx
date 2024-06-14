@@ -152,7 +152,7 @@ function Main() {
   };
 
   const handleAddToLocalCart = () => {
-    addToLocalCart(selectedInstrument, quantite, updateCartCount);
+    addToLocalCart(selectedInstrument, quantite, updateCartCount, setErrorMessage);
     console.log("Instrument ajouté au panier local", selectedInstrument);
   };
 

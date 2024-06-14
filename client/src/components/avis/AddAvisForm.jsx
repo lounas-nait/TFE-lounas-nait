@@ -1,8 +1,10 @@
-// AddReviewForm.js
 import React, { useState } from 'react';
-import StarRatings from 'react-star-ratings'; 
+import { useAuth0 } from "@auth0/auth0-react";
+import StarRatings from 'react-star-ratings';
+import LoginButton from '../../authentification/LoginButton';
 
 const AddAvisForm = ({ clientId, instrumentId, onReviewSubmitted, accessTokenFetcher }) => {
+  const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [note, setNote] = useState(0);
   const [commentaire, setComment] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -44,12 +46,22 @@ const AddAvisForm = ({ clientId, instrumentId, onReviewSubmitted, accessTokenFet
       // reset form
       setNote(0);
       setComment('');
-      
+
     } catch (error) {
       setErrorMessage('Erreur lors de la publication de l\'avis');
       setSuccessMessage('');
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="w-1/2 pl-4">
+        <h1 className="text-2xl font-semibold mb-4">Ajouter un avis</h1>
+        <p className="mr-2 mt-8 mb-8">Connectez-vous pour laisser un avis</p>
+         <LoginButton className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700"/>
+      </div>
+    );
+  }
 
   return (
     <div className="w-1/2 pl-4">

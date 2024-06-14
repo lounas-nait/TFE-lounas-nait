@@ -1,31 +1,15 @@
 package eafcuccle.tfe.lounasnaitecommerce.controller;
 
 import eafcuccle.tfe.lounasnaitecommerce.classes.Client;
-import eafcuccle.tfe.lounasnaitecommerce.classes.Commande;
-import eafcuccle.tfe.lounasnaitecommerce.classes.Image;
-import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Panier;
-import eafcuccle.tfe.lounasnaitecommerce.classes.Utilisateur;
-import eafcuccle.tfe.lounasnaitecommerce.classes.LignePanier;
 
 import eafcuccle.tfe.lounasnaitecommerce.repositories.ClientRepository;
-import eafcuccle.tfe.lounasnaitecommerce.repositories.PanierRepository;
-import eafcuccle.tfe.lounasnaitecommerce.repositories.UtilisateurRepository;
-import eafcuccle.tfe.lounasnaitecommerce.repositories.LignePanierRepository;
-import eafcuccle.tfe.lounasnaitecommerce.repositories.InstrumentRepository;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import java.net.URI;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,42 +18,52 @@ import java.util.Optional;
 @RestController
 public class ClientController {
 
-    private final UtilisateurRepository utilisateurRepository;
     private final ClientRepository clientRepository;
-    private final PanierRepository panierRepository;
-    private final LignePanierRepository lignePanierRepository;
-    private final InstrumentRepository instrumentRepository;
-
-    private static final Logger logger = LoggerFactory.getLogger(ClientController.class);
 
     @Autowired
-    public ClientController(ClientRepository clientRepository, PanierRepository panierRepository,
-            UtilisateurRepository utilisateurRepository, LignePanierRepository lignePanierRepository,
-            InstrumentRepository instrumentRepository) {
+    public ClientController(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
-        this.panierRepository = panierRepository;
-        this.utilisateurRepository = utilisateurRepository;
-        this.lignePanierRepository = lignePanierRepository;
-        this.instrumentRepository = instrumentRepository;
     }
 
     @GetMapping("/api/clients")
-    public ResponseEntity<Client> getAllClients(Authentication authentication) {
+    public ResponseEntity<?> getClients(Authentication authentication) {
         if (authentication == null) {
-            System.out.println("Authentication is null");
-            return ResponseEntity.noContent().build(); // Retourner une réponse vide
+            // Si l'authentification est nulle, renvoyer tous les clients
+            List<Client> allClients = clientRepository.findAll();
+            System.out.println("Authentication is null, returning all clients.");
+            return ResponseEntity.ok(allClients);
         }
-        System.out.println("Authentication is not null");
         String username = authentication.getName();
-        System.out.println("Authenticated username: " + username);
         Optional<Client> owner = clientRepository.findByAuth0Id(username);
-        System.out.println("owner: " + owner.get());
+
         if (owner.isPresent()) {
             Client client = owner.get();
-
             return ResponseEntity.ok(client);
         }
-        return ResponseEntity.noContent().build(); // Retourner une réponse vide
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/api/clients/{clientId}")
+    public ResponseEntity<?> getClientById(@PathVariable("clientId") String clientId, Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+        UUID idClient;
+        try {
+            idClient = UUID.fromString(clientId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid UUID format");
+        }
+
+        Optional<Client> client = clientRepository.findById(idClient);
+
+        if (client.isPresent()) {
+            return ResponseEntity.ok(client.get()); // Retourner le client avec succès
+        } else {
+            return ResponseEntity.notFound().build(); // Retourner une réponse 404 si le client n'est pas trouvé
+        }
     }
 
     @PostMapping("/api/clients")
