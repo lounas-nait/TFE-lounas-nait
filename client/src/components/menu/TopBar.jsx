@@ -87,6 +87,8 @@ function TopBar({ setSearchQuery }) {
         return <div>Loading ...</div>;
     }
 
+    const isAdmin = isAuthenticated && user.email.startsWith('admin');
+
     return (
         <>
             <Disclosure as="nav" className="bg-gradient-to-r  from-gray-700 from-5% via-stone-500 via-60% to-amber-800 to-80% fixed top-0 left-16 right-0 z-50">
@@ -105,53 +107,55 @@ function TopBar({ setSearchQuery }) {
                                 <div className="flex items-center space-x-6 mr-4">
                                     {isAuthenticated ? (
                                         <>
-                                            <Menu as="div" className="relative z-50">
-                                                <Menu.Button className="flex items-center text-sm rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800"
-                                                    type="button"
-                                                    onClick={() => setOpenNotification(!openNotification)}>
-                                                    <div className="relative">
-                                                        <span className="sr-only">View notifications</span>
-                                                        <BellIcon className="h-6 w-6" aria-hidden="true" />
-                                                        {notificationCount > 0 && (
-                                                            <span className="absolute top-1 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">{notificationCount}</span>
-                                                        )}
-                                                    </div>
-                                                </Menu.Button>
-                                                <Transition
-                                                    show={openNotification}
-                                                    enter="transition ease-out duration-100"
-                                                    enterFrom="transform opacity-0 scale-95"
-                                                    enterTo="transform opacity-100 scale-100"
-                                                    leave="transition ease-in duration-75"
-                                                    leaveFrom="transform opacity-100 scale-100"
-                                                    leaveTo="transform opacity-0 scale-95"
-                                                >
-                                                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                                                        {notificationList.length > 0 ? (
-                                                            notificationList.map((notification, index) => (
-                                                                <Menu.Item key={index}>
-                                                                    {({ active }) => (
-                                                                        <div className={`block px-4 py-2 text-sm cursor-pointer ${active ? 'bg-yellow-100' : ''}`} onClick={() => handleInstrumentClick(notification)}>
-                                                                            <div className="flex items-center">
-                                                                                <div className="flex-shrink-0 mr-2">
-                                                                                    <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500" />
-                                                                                </div>
-                                                                                <div>
-                                                                                    {notification.nom} il reste {notification.quantiteEnStock} en stock
+                                            {isAdmin && (
+                                                <Menu as="div" className="relative z-50">
+                                                    <Menu.Button className="flex items-center text-sm rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800"
+                                                        type="button"
+                                                        onClick={() => setOpenNotification(!openNotification)}>
+                                                        <div className="relative">
+                                                            <span className="sr-only">View notifications</span>
+                                                            <BellIcon className="h-6 w-6" aria-hidden="true" />
+                                                            {notificationCount > 0 && (
+                                                                <span className="absolute top-1 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">{notificationCount}</span>
+                                                            )}
+                                                        </div>
+                                                    </Menu.Button>
+                                                    <Transition
+                                                        show={openNotification}
+                                                        enter="transition ease-out duration-100"
+                                                        enterFrom="transform opacity-0 scale-95"
+                                                        enterTo="transform opacity-100 scale-100"
+                                                        leave="transition ease-in duration-75"
+                                                        leaveFrom="transform opacity-100 scale-100"
+                                                        leaveTo="transform opacity-0 scale-95"
+                                                    >
+                                                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                                            {notificationList.length > 0 ? (
+                                                                notificationList.map((notification, index) => (
+                                                                    <Menu.Item key={index}>
+                                                                        {({ active }) => (
+                                                                            <div className={`block px-4 py-2 text-sm cursor-pointer ${active ? 'bg-yellow-100' : ''}`} onClick={() => handleInstrumentClick(notification)}>
+                                                                                <div className="flex items-center">
+                                                                                    <div className="flex-shrink-0 mr-2">
+                                                                                        <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500" />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        {notification.nom} il reste {notification.quantiteEnStock} en stock
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
-                                                                    )}
-                                                                </Menu.Item>
-                                                            ))
-                                                        ) : (
-                                                            <div className="block px-4 py-2 text-sm">
-                                                                Pas de notifications
-                                                            </div>
-                                                        )}
-                                                    </Menu.Items>
-                                                </Transition>
-                                            </Menu>
+                                                                        )}
+                                                                    </Menu.Item>
+                                                                ))
+                                                            ) : (
+                                                                <div className="block px-4 py-2 text-sm">
+                                                                    Pas de notifications
+                                                                </div>
+                                                            )}
+                                                        </Menu.Items>
+                                                    </Transition>
+                                                </Menu>
+                                            )}
                                             <Menu as="div" className="relative z-50">
                                                 <div>
                                                     <Menu.Button className="flex items-center text-sm rounded-full text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -220,4 +224,3 @@ function TopBar({ setSearchQuery }) {
 }
 
 export default TopBar;
-

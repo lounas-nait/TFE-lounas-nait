@@ -3,14 +3,12 @@ import StarRatings from 'react-star-ratings';
 import { FaUserCircle } from 'react-icons/fa';
 import { useAuth0 } from "@auth0/auth0-react";
 import { AiFillDelete } from "react-icons/ai";
-import useSWR from 'swr';
 
-const AvisList = ({ avis }) => {
+const AvisList = ({ avis, onAvisDeleted }) => {
   const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [clients, setClients] = useState({});
-  
+
   useEffect(() => {
-    // Récupération des détails des clients pour chaque avis seulement si l'utilisateur est connecté
     if (isAuthenticated) {
       avis.forEach((avisItem) => {
         if (!clients[avisItem.client]) {
@@ -18,7 +16,7 @@ const AvisList = ({ avis }) => {
         }
       });
     }
-  }, [avis, isAuthenticated]); // Réexécute l'effet lorsque les avis ou l'état d'authentification changent
+  }, [avis, isAuthenticated]);
 
   const fetchClient = async (clientId) => {
     try {
@@ -34,7 +32,7 @@ const AvisList = ({ avis }) => {
       const clientData = await response.json();
       setClients(prevClients => ({
         ...prevClients,
-        [clientId]: clientData.nom // Stocke le nom du client par ID dans l'état local
+        [clientId]: clientData.nom
       }));
     } catch (error) {
       console.error('Failed to fetch client:', error);
@@ -42,12 +40,7 @@ const AvisList = ({ avis }) => {
   };
 
   const reversedAvis = [...avis].reverse();
-
   const isAdmin = isAuthenticated && user.email && user.email.startsWith('admin');
-
-  const handleDeleteAvis = (id) => {
-    // Logique pour supprimer l'avis avec l'ID spécifié
-  };
 
   return (
     <div className="w-1/2 pr-4">
@@ -58,7 +51,7 @@ const AvisList = ({ avis }) => {
             {isAdmin && (
               <button
                 className="absolute top-0 right-0 m-2 focus:outline-none text-red-500"
-                onClick={() => handleDeleteAvis(avisItem.id)}
+                onClick={() => onAvisDeleted(avisItem.id)}
               >
                 <AiFillDelete size="1.7em" />
               </button>

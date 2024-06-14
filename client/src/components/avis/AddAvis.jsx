@@ -47,8 +47,6 @@ const AddAvis = () => {
   const { data: clientData, error: clientError } = useSWR('/api/clients', fetcher);
   const { data: instrumentsData, error: instrumentsError } = useSWR('/api/instruments?size=1000', fetchInstrument);
 
-  console.log(clientData);
-
   if (clientError) {
     return <div className="text-red-500">Erreur lors de la récupération des données du client.</div>;
   }
@@ -61,16 +59,36 @@ const AddAvis = () => {
     return <div>Chargement...</div>;
   }
 
-  const instrumentList = instrumentsData.content || instrumentsData; 
+  const instrumentList = instrumentsData.content || instrumentsData;
   const instrument = Array.isArray(instrumentList) ? instrumentList.find((instrument) => instrument.id === id) : null;
 
   const handleReviewSubmitted = () => {
     mutate('/api/instruments?size=1000');
   };
 
+  const handleDeleteAvis = async (avisId) => {
+    try {
+      const accessToken = await getAccessTokenSilently();
+      const response = await fetch(`/api/aviss/${avisId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+
+      if (response.ok) {
+        mutate('/api/instruments?size=1000');
+      } else {
+        console.error('Failed to delete avis:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error deleting avis:', error);
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto mt-10 flex">
-      {instrument && <AvisList avis={instrument.avis} />}
+      {instrument && <AvisList avis={instrument.avis} onAvisDeleted={handleDeleteAvis} />}
       {(
         <AddAvisForm 
           clientId={clientData.id} 
