@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import useSWR from "swr";
 import { useAuth0 } from "@auth0/auth0-react";
+import TopBar from "../menu/TopBar";
 
 const MesCommandes = () => {
   const { getAccessTokenSilently, user } = useAuth0();
@@ -85,7 +86,10 @@ const MesCommandes = () => {
 
   return (
     <div className="flex flex-col items-center w-full bg-gray-100 p-5">
-      <h1 className="text-3xl font-bold mb-5 text-center">Commandes</h1>
+      <div >
+        <TopBar />
+      </div>
+      <br /><br /><br />
       <div className="overflow-x-auto w-full">
         <table className="w-full my-0 align-middle text-dark border-neutral-200 bg-white shadow-md rounded-lg">
           <thead className="w-full align-bottom bg-gray-200">
@@ -95,6 +99,7 @@ const MesCommandes = () => {
               <th className="pb-3 text-end min-w-[100px] px-3 py-2">Statut</th>
               {user.email && user.email.startsWith("admin") && (
                 <>
+                  <th className="pb-3 text-center min-w-[100px] px-3 py-2">Client</th>
                   <th className="pb-3 text-center min-w-[100px] px-3 py-2">Actions</th>
                   <th className="pb-3 text-center min-w-[100px] px-3 py-2">Détails</th>
                 </>
@@ -112,6 +117,7 @@ const MesCommandes = () => {
                   </td>
                   {user.email && user.email.startsWith("admin") && commande.statut === 'confirmé' && (
                     <>
+                      <td className="p-3 pl-2 px-3 py-2">{commande.client}</td>
                       <td className="p-3 pr-12 text-center px-3 py-2">
                         <button
                           className="mx-1 focus:outline-none border border-red-500 rounded p-1 text-red-500"

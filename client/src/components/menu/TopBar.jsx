@@ -1,20 +1,18 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
-import { BellIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { BellIcon } from '@heroicons/react/24/outline';
 import { useAuth0 } from "@auth0/auth0-react";
 import LogoutButton from '../../authentification/LogoutButton';
 import LoginButton from '../../authentification/LoginButton';
-import SearchBar from './SearchBar';
+import SearchBar from './SearchBar'; // Importez SearchBar ici
 import InstrumentDetail from '../instrumentsList/InstrumentDetail';
 import handleUpdate from '../../functions/HandleUpdate';
 import { useNotification } from '../context/NotificationContext';
 import ms from "../../images/ms.png";
+import ResetPassword from '../ResetPassword';
+import { BsExclamationTriangleFill } from 'react-icons/bs';
 
 function TopBar({ setSearchQuery }) {
-    const handleSearchChange = (query) => {
-        setSearchQuery(query);
-    };
-
     const { getAccessTokenSilently, user, isAuthenticated, isLoading } = useAuth0();
     const [updatedQuantiteEnStock, setUpdatedQuantiteEnStock] = useState(0);
     const [selectedInstrument, setSelectedInstrument] = useState(null);
@@ -27,7 +25,7 @@ function TopBar({ setSearchQuery }) {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const response = await fetch('/api/instruments?size=1000'); 
+                const response = await fetch('/api/instruments?size=1000');
                 const instruments = await response.json();
                 const stockBasOrRupture = instruments.content.filter(instrument => instrument.quantiteEnStock <= 0 || instrument.quantiteEnStock <= 3);
                 setNotificationList(stockBasOrRupture);
@@ -36,11 +34,11 @@ function TopBar({ setSearchQuery }) {
                 console.error('Erreur lors de la récupération des notifications:', error);
             }
         };
-    
+
         const interval = setInterval(() => {
             fetchNotifications();
         }, 600);
-    
+
         return () => clearInterval(interval);
     }, [updateNotificationCount]);
 
@@ -65,9 +63,13 @@ function TopBar({ setSearchQuery }) {
         const value = parseInt(e.target.value, 10);
         setUpdatedPrixTVA(value);
     };
-    
+
+    const handleSearchChange = (query) => {
+        setSearchQuery(query);
+    };
+
     const searchURL = `/api/instruments?size=1000`;
-    
+
     const handleUpdateInstrument = async () => {
         try {
             await handleUpdate(
@@ -89,6 +91,9 @@ function TopBar({ setSearchQuery }) {
 
     const isAdmin = isAuthenticated && user.email.startsWith('admin');
 
+    // Vérification si vous êtes sur la page d'accueil
+    const isHomePage = window.location.pathname === '/'; // Adapter le chemin selon votre routage
+
     return (
         <>
             <Disclosure as="nav" className="bg-gradient-to-r  from-gray-700 from-5% via-stone-500 via-60% to-amber-800 to-80% fixed top-0 left-16 right-0 z-50">
@@ -100,9 +105,11 @@ function TopBar({ setSearchQuery }) {
                                     <img src={ms} alt="" className='h-10 w-50' />
                                 </div>
 
-                                <div className="flex-grow flex items-center justify-center">
-                                    <SearchBar onSearch={handleSearchChange} />
-                                </div>
+                                {isHomePage && ( // Afficher SearchBar uniquement sur la page d'accueil
+                                    <div className="flex-grow flex items-center justify-center">
+                                        <SearchBar onSearch={handleSearchChange} />
+                                    </div>
+                                )}
 
                                 <div className="flex items-center space-x-6 mr-4">
                                     {isAuthenticated ? (
@@ -129,19 +136,24 @@ function TopBar({ setSearchQuery }) {
                                                         leaveFrom="transform opacity-100 scale-100"
                                                         leaveTo="transform opacity-0 scale-95"
                                                     >
-                                                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                                        <Menu.Items className="absolute right-0 mt-2 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-80 overflow-y-auto">
                                                             {notificationList.length > 0 ? (
                                                                 notificationList.map((notification, index) => (
                                                                     <Menu.Item key={index}>
                                                                         {({ active }) => (
-                                                                            <div className={`block px-4 py-2 text-sm cursor-pointer ${active ? 'bg-yellow-100' : ''}`} onClick={() => handleInstrumentClick(notification)}>
-                                                                                <div className="flex items-center">
-                                                                                    <div className="flex-shrink-0 mr-2">
-                                                                                        <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500" />
-                                                                                    </div>
-                                                                                    <div>
-                                                                                        {notification.nom} il reste {notification.quantiteEnStock} en stock
-                                                                                    </div>
+                                                                            <div
+                                                                                className={`block px-4 py-2 w-60 text-sm cursor-pointer ${active ? 'bg-yellow-200' : ''}`}
+                                                                                onClick={() => handleInstrumentClick(notification)}
+                                                                            >
+                                                                                <div className="flex items-center space-x-2">
+                                                                                    <img
+                                                                                        key={index}
+                                                                                        src={notification.images[0].url}
+                                                                                        className="w-10 h-10 object-cover cursor-pointer border-2 border-gray-400 hover:border-stone-700 focus:outline-none rounded-md"
+                                                                                        alt={notification.nom}
+                                                                                    />
+                                                                                    <span>{notification.nom} il reste {notification.quantiteEnStock} en stock</span>
+                                                                                    <BsExclamationTriangleFill className="h-12 w-12 text-red-500" />
                                                                                 </div>
                                                                             </div>
                                                                         )}
@@ -153,6 +165,7 @@ function TopBar({ setSearchQuery }) {
                                                                 </div>
                                                             )}
                                                         </Menu.Items>
+
                                                     </Transition>
                                                 </Menu>
                                             )}
@@ -176,14 +189,27 @@ function TopBar({ setSearchQuery }) {
                                                     leaveFrom="transform opacity-100 scale-100"
                                                     leaveTo="transform opacity-0 scale-95"
                                                 >
-                                                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                                    <Menu.Items className="absolute right-0 mt-2 w-60 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                                                         <Menu.Item>
                                                             {({ active }) => (
                                                                 <div className={`block px-4 py-2 text-sm text-gray-700 ${active ? 'bg-gray-100' : ''}`}>
-                                                                    <div className="font-bold text-lg text-gray-800">{user.name}</div>
+                                                                    <div className="flex items-center space-x-2">
+                                                                        <img
+                                                                            className="h-8 w-8 rounded-full"
+                                                                            src={user.picture}
+                                                                            alt=""
+                                                                        />
+                                                                        <span className="font-bold text-lg text-gray-800">{user.nickname}</span>
+                                                                    </div>
                                                                     <div>{user.email}</div>
                                                                 </div>
                                                             )}
+                                                        </Menu.Item>
+
+                                                        <Menu.Item>
+                                                            <div className="block px-4 py-2 text-sm text-blue-700">
+                                                                <ResetPassword />
+                                                            </div>
                                                         </Menu.Item>
                                                         <Menu.Item>
                                                             <div className="block px-4 py-2 text-sm text-red-700">

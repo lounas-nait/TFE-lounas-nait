@@ -70,7 +70,9 @@ function Main() {
   };
 
   useEffect(() => {
-    fetchCartItemCount();
+    if (!user?.email.startsWith('admin')) {
+      fetchCartItemCount();
+    }
   }, [isAuthenticated]);
 
   const fetchInstruments = async (url) => {
@@ -246,9 +248,9 @@ function Main() {
             />
           </div>
         </>
-  )}
-  </div>
-);
+      )}
+    </div>
+  );
 }
 
 export default Main;

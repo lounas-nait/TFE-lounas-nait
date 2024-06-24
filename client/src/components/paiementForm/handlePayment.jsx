@@ -43,10 +43,13 @@ const handlePayment = async (
     });
 
     if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error creating order:', errorData);
       throw new Error('Failed to create order');
     }
 
-    console.log('Order created:', await response.json());
+    const orderData = await response.json();
+    console.log('Order created:', orderData);
 
     // Suppression des lignes du panier
     for (const ligne of cartItems) {
@@ -58,7 +61,8 @@ const handlePayment = async (
       });
 
       if (!deleteResponse.ok) {
-        console.error(`Failed to delete lignePanier with id ${ligne.id}`);
+        const deleteErrorData = await deleteResponse.json();
+        console.error(`Failed to delete lignePanier with id ${ligne.id}`, deleteErrorData);
       } else {
         console.log(`LignePanier with id ${ligne.id} deleted`);
       }

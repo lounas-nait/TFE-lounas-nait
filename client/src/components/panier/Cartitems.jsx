@@ -5,6 +5,7 @@ import { NavLink } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import useSWR, { mutate } from 'swr';
 import { useAuth0 } from "@auth0/auth0-react";
+import TopBar from '../menu/TopBar';
 
 const Cartitems = () => {
   const { cartCount, updateCartCount } = useCart();
@@ -84,6 +85,8 @@ const Cartitems = () => {
   return (
     <div>
       <div className='w-11/12 m-auto py-10'>
+      <TopBar />
+      <br /><br /><br />
         <h1 className='text-3xl font-bold'>Mon Panier</h1><br />
         {cartItems.length === 0 ? (
           <div>

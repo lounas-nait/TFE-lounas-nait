@@ -5,6 +5,7 @@ import { BsArrowLeft } from 'react-icons/bs';
 import { NavLink } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import LoginButton from '../../authentification/LoginButton';
+import TopBar from '../menu/TopBar';
 
 const CartitemsLocal = () => {
   const { cartCount, updateCartCount } = useCart();
@@ -32,6 +33,7 @@ const CartitemsLocal = () => {
 
   if (!cartItems || cartItems.length === 0) {
     return <div className='w-11/12 m-auto py-10'>
+      <TopBar /><br /><br />
       <h1 className='text-3xl font-bold'>Mon Panier</h1><br />
     <p className='text-lg text-gray-500'>Votre panier est vide</p>
     <div className='my-5'>

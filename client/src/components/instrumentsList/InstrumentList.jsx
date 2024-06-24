@@ -7,6 +7,7 @@ import stockStatus from '../../functions/StockStatus';
 
 function ProductList({ products, handleClick, favoriteInstruments, isAdmin, handleDelete }) {
   const [localFavoriteInstruments, setLocalFavoriteInstruments] = useState({});
+  const [hoveredInstrumentId, setHoveredInstrumentId] = useState(null);
 
   const toggleFavorite = (instrumentId) => {
     setLocalFavoriteInstruments((prevFavorites) => {
@@ -26,26 +27,47 @@ function ProductList({ products, handleClick, favoriteInstruments, isAdmin, hand
             <div className='m-2 bg-gray-100 p-2'>
               <h1 className='text-xl font-semibold'>{product.nom}</h1>
               <div className='text-sm'>
-              {stockStatus(product.quantiteEnStock)}
-            </div>
+                {stockStatus(product.quantiteEnStock)}
+              </div>
               <p className='text-sm'> {generateStars(product.averageRating)}</p>
               <div className='flex justify-between items-center'>
                 <p className='text-xl font-bold'>{product.prixTVA} euro</p>
-                {favoriteInstruments[product.id] ? (
-                  <BsHeartFill onClick={() => toggleFavorite(product.id)} size={'1.4rem'} style={{ color: 'red', cursor: 'pointer' }} />
-                ) : (
-                  <BsHeart onClick={() => toggleFavorite(product.id)} size={'1.4rem'} style={{ cursor: 'pointer' }} />
-                )}
-                <CiShoppingCart size={'1.4rem'} />
+                <div className='flex items-center space-x-2'>
+                  {localFavoriteInstruments[product.id] ? (
+                    <BsHeartFill
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(product.id);
+                      }}
+                      size={'1.2rem'}
+                      style={{ color: 'red', cursor: 'pointer' }}
+                    />
+                  ) : (
+                    <BsHeart
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(product.id);
+                      }}
+                      size={'1.2rem'}
+                      style={{
+                        cursor: 'pointer',
+                        color: hoveredInstrumentId === product.id ? 'red' : 'black'
+                      }}
+                      onMouseEnter={() => setHoveredInstrumentId(product.id)}
+                      onMouseLeave={() => setHoveredInstrumentId(null)}
+                    />
+                  )}
+                  <CiShoppingCart size={'1.4rem'} style={{ cursor: 'pointer' }} />
+                </div>
               </div>
             </div>
-            
+
             {isAdmin && (
               <AiFillDelete
                 size={"1.7rem"}
                 className="absolute top-2 right-2 text-gray-500 hover:text-red-500 cursor-pointer"
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent triggering handleClick
+                  e.stopPropagation(); 
                   handleDelete(product.id);
                 }}
               />

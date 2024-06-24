@@ -1,5 +1,6 @@
 package eafcuccle.tfe.lounasnaitecommerce.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,6 +35,7 @@ public class CommandeController {
     private final PanierRepository panierRepository;
     private final LignePanierRepository lignePanierRepository;
     private final FactureRepository factureRepository;
+    private final UtilisateurRepository utilisateurRepository;
     private final EmailService emailService;
     private final EmailLivraisonService emailLivraisonService;
     private final EmailAnnulationService emailAnnulationService;
@@ -45,6 +49,7 @@ public class CommandeController {
             PanierRepository panierRepository,
             LignePanierRepository lignePanierRepository,
             FactureRepository factureRepository,
+            UtilisateurRepository utilisateurRepository,
             EmailService emailService,
             EmailLivraisonService emailLivraisonService,
             EmailAnnulationService emailAnnulationService) {
@@ -54,110 +59,127 @@ public class CommandeController {
         this.panierRepository = panierRepository;
         this.lignePanierRepository = lignePanierRepository;
         this.factureRepository = factureRepository;
+        this.utilisateurRepository = utilisateurRepository;
         this.emailService = emailService;
         this.emailLivraisonService = emailLivraisonService;
         this.emailAnnulationService = emailAnnulationService;
     }
 
     @GetMapping("/api/commandes")
-    public ResponseEntity<List<Commande>> getAllCommande(Authentication authentication) {
+    public ResponseEntity<?> getAllCommande(Authentication authentication) {
         String username = authentication.getName();
         System.out.println("Authenticated username: " + username);
-        Optional<Client> owner = clientRepository.findByAuth0Id(username);
 
-        // Vérifier si le client est présent dans la base de données
-        if (owner.isPresent()) {
-            Client client = owner.get();
-            // Vérifier si l'email commence par "admin"
-            if (client.getEmail().startsWith("admin")) {
-                System.out.println("aderssseclient: " + client.getEmail());
-                // Si oui, récupérer toutes les commandes
+        // Recherche de l'utilisateur dans la table Utilisateur
+        Optional<Utilisateur> utilisateurOptional = utilisateurRepository.findByAuth0Id(username);
+
+        if (utilisateurOptional.isPresent()) {
+            Utilisateur utilisateur = utilisateurOptional.get();
+
+            // Vérification du type de l'utilisateur
+            if (utilisateur instanceof Client) {
+                // Si c'est un Client, récupérer les commandes du client
+                Client client = (Client) utilisateur;
+                List<Commande> commandes = commandeRepository.findByClient(client);
+                return ResponseEntity.ok(commandes);
+            } else if (utilisateur instanceof Admin) {
+                // Si c'est un Admin, récupérer toutes les commandes
                 List<Commande> commandes = commandeRepository.findAll();
                 return ResponseEntity.ok(commandes);
             } else {
-                // Sinon, récupérer les commandes du client connecté
-                List<Commande> commandes = commandeRepository.findByClient(client);
-                return ResponseEntity.ok(commandes);
+
+                return ResponseEntity.badRequest().body("Type d'utilisateur non pris en charge");
             }
         } else {
-            System.out.println("Client not found for username: " + username);
-            return ResponseEntity.noContent().build(); // Retourner une réponse vide
+            System.out.println("Utilisateur non trouvé pour username: " + username);
+            return ResponseEntity.noContent().build();
         }
     }
 
     @PostMapping("/api/commandes/{idClient}")
-    public ResponseEntity<Commande> createCommande(@RequestBody Commande commande,
+    public ResponseEntity<?> createCommande(@RequestBody Commande commande,
             @PathVariable("idClient") String idClient,
             UriComponentsBuilder builder) throws MessagingException, IOException {
-        commande.setId(UUID.randomUUID());
+        try {
+            commande.setId(UUID.randomUUID());
 
-        UUID idClientUuid = UUID.fromString(idClient);
+            UUID idClientUuid = UUID.fromString(idClient);
 
-        Client client = clientRepository.findById(idClientUuid)
-                .orElseThrow(() -> new RuntimeException("Client not found"));
+            Client client = clientRepository.findById(idClientUuid)
+                    .orElseThrow(() -> new RuntimeException("Client not found"));
 
-        commande.setClient(client);
+            commande.setClient(client);
 
-        Panier panier = panierRepository.findByClientId(idClientUuid)
-                .orElseThrow(() -> new RuntimeException("Panier not found"));
+            Panier panier = panierRepository.findByClientId(idClientUuid)
+                    .orElseThrow(() -> new RuntimeException("Panier not found"));
 
-        List<LignePanier> lignesPanier = panier.getLignesPanier();
+            List<LignePanier> lignesPanier = panier.getLignesPanier();
 
-        List<LigneCommande> lignesCommande = lignesPanier.stream()
-                .map(lignePanier -> {
-                    LigneCommande ligneCommande = new LigneCommande();
-                    ligneCommande.setId(UUID.randomUUID());
-                    ligneCommande.setCommande(commande);
-                    ligneCommande.setInstrument(lignePanier.getInstrument());
-                    ligneCommande.setQuantite(lignePanier.getQuantite());
-                    ligneCommande.setPrixUnitaireHorsTVA(lignePanier.getInstrument().getPrixHorsTVA());
-                    ligneCommande.setPrixUnitairePaye(lignePanier.getInstrument().getPrixTVA());
+            List<LigneCommande> lignesCommande = lignesPanier.stream()
+                    .map(lignePanier -> {
+                        LigneCommande ligneCommande = new LigneCommande();
+                        ligneCommande.setId(UUID.randomUUID());
+                        ligneCommande.setCommande(commande);
+                        ligneCommande.setInstrument(lignePanier.getInstrument());
+                        ligneCommande.setQuantite(lignePanier.getQuantite());
+                        ligneCommande.setPrixUnitaireHorsTVA(lignePanier.getInstrument().getPrixHorsTVA());
+                        ligneCommande.setPrixUnitairePaye(lignePanier.getInstrument().getPrixTVA());
 
-                    Instrument instrument = lignePanier.getInstrument();
-                    instrument.setQuantiteEnStock(instrument.getQuantiteEnStock() - lignePanier.getQuantite());
-                    return ligneCommande;
-                })
-                .collect(Collectors.toList());
+                        Instrument instrument = lignePanier.getInstrument();
+                        instrument.setQuantiteEnStock(instrument.getQuantiteEnStock() - lignePanier.getQuantite());
+                        return ligneCommande;
+                    })
+                    .collect(Collectors.toList());
 
-        commande.setLignesCommande(lignesCommande);
+            commande.setLignesCommande(lignesCommande);
 
-        Float montantHT = (float) lignesCommande.stream()
-                .mapToDouble(ligneCommande -> ligneCommande.getPrixUnitaireHorsTVA() * ligneCommande.getQuantite())
-                .sum();
+            Float montantHT = (float) lignesCommande.stream()
+                    .mapToDouble(ligneCommande -> ligneCommande.getPrixUnitaireHorsTVA() * ligneCommande.getQuantite())
+                    .sum();
 
-        Float montantTotal = (float) lignesCommande.stream()
-                .mapToDouble(ligneCommande -> ligneCommande.getPrixUnitairePaye() * ligneCommande.getQuantite())
-                .sum();
+            Float montantTotal = (float) lignesCommande.stream()
+                    .mapToDouble(ligneCommande -> ligneCommande.getPrixUnitairePaye() * ligneCommande.getQuantite())
+                    .sum();
 
-        Commande savedCommande = commandeRepository.save(commande);
+            Commande savedCommande = commandeRepository.save(commande);
 
-        Facture facture = new Facture();
-        facture.setId(UUID.randomUUID());
-        facture.setMontantHT(montantHT);
-        facture.setMontantTVA(montantTotal);
-        facture.setCommande(savedCommande);
-        Facture savedFacture = factureRepository.save(facture);
+            Facture facture = new Facture();
+            facture.setId(UUID.randomUUID());
+            facture.setMontantHT(montantHT);
+            facture.setMontantTVA(montantTotal);
+            facture.setCommande(savedCommande);
+            Facture savedFacture = factureRepository.save(facture);
 
-        savedCommande.setFacture(savedFacture);
-        commandeRepository.save(savedCommande);
+            savedCommande.setFacture(savedFacture);
+            commandeRepository.save(savedCommande);
 
-        lignesPanier.forEach(lignePanier -> lignePanierRepository.delete(lignePanier));
+            lignesPanier.forEach(lignePanier -> lignePanierRepository.delete(lignePanier));
 
-        panier.setLignesPanier(new ArrayList<>());
-        panierRepository.save(panier);
+            panier.setLignesPanier(new ArrayList<>());
+            panierRepository.save(panier);
 
-        // Envoyer l'email de confirmation de commande
-        List<String> articles = lignesCommande.stream()
-                .map(lc -> lc.getQuantite() + " x " + lc.getInstrument().getNom())
-                .collect(Collectors.toList());
+            // Envoyer l'email de confirmation de commande
+            List<String> articles = lignesCommande.stream()
+                    .map(lc -> lc.getQuantite() + " x " + lc.getInstrument().getNom())
+                    .collect(Collectors.toList());
 
-        emailService.sendOrderConfirmationEmail(client.getEmail(), client.getNom(), articles, montantHT, montantTotal,
-                lignesCommande);
+            emailService.sendOrderConfirmationEmail(client.getEmail(), client.getNom(), articles, montantHT,
+                    montantTotal,
+                    lignesCommande);
 
-        URI linkToNewCommande = builder.pathSegment("api", "commandes", "{id}")
-                .buildAndExpand(savedCommande.getId()).toUri();
+            URI linkToNewCommande = builder.pathSegment("api", "commandes", "{id}")
+                    .buildAndExpand(savedCommande.getId()).toUri();
 
-        return ResponseEntity.created(linkToNewCommande).body(savedCommande);
+            return ResponseEntity.created(linkToNewCommande).body(savedCommande);
+        } catch (RuntimeException e) {
+            // Log the exception with stack trace
+            e.printStackTrace();
+            // Return a ResponseEntity with the error message
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An error occurred while processing the order");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     @DeleteMapping("/api/lignesPanier/{id}")

@@ -1,10 +1,12 @@
 package eafcuccle.tfe.lounasnaitecommerce.controller;
 
+import eafcuccle.tfe.lounasnaitecommerce.classes.Admin;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Categorie;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Client;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Instrument;
 import eafcuccle.tfe.lounasnaitecommerce.classes.LignePanier;
 import eafcuccle.tfe.lounasnaitecommerce.classes.Panier;
+import eafcuccle.tfe.lounasnaitecommerce.classes.Utilisateur;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.ClientRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.InstrumentRepository;
 import eafcuccle.tfe.lounasnaitecommerce.repositories.PanierRepository;
@@ -62,19 +64,28 @@ public class PanierController {
     public ResponseEntity<Panier> getAllPaniers(Authentication authentication) {
         if (authentication == null) {
             System.out.println("Authentication is null");
-            return ResponseEntity.noContent().build(); // Retourner une réponse vide
+            return ResponseEntity.noContent().build();
         }
+
         System.out.println("Authentication is not null");
         String username = authentication.getName();
         System.out.println("Authenticated username: " + username);
-        Optional<Client> owner = clientRepository.findByAuth0Id(username);
-        System.out.println("owner: " + owner.get());
-        if (owner.isPresent()) {
-            Client client = owner.get();
-            Panier panier = panierRepository.findByClient(client);
-            return ResponseEntity.ok(panier);
+
+        Optional<Utilisateur> utilisateurOpt = utilisateurRepository.findByAuth0Id(username);
+
+        if (utilisateurOpt.isPresent()) {
+            Utilisateur utilisateur = utilisateurOpt.get();
+            if (utilisateur instanceof Client) {
+                Client client = (Client) utilisateur;
+                Panier panier = panierRepository.findByClient(client);
+                return ResponseEntity.ok(panier);
+            } else if (utilisateur instanceof Admin) {
+                System.out.println("User is an admin, returning no content.");
+                return ResponseEntity.noContent().build();
+            }
         }
-        return ResponseEntity.noContent().build(); // Retourner une réponse vide
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/api/paniers/{id}/lignesPanier")
