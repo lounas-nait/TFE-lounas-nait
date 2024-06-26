@@ -14,7 +14,8 @@ import java.util.List;
 public class PdfGenerator {
 
     public static void createInvoicePdf(String filePath, String clientName, List<String> articles,
-            float montantHT, float montantTVA, List<LigneCommande> lignesCommande) throws IOException {
+            float montantHT, float montantTVA, List<LigneCommande> lignesCommande, String modePaiement)
+            throws IOException {
 
         PDDocument document = new PDDocument();
         PDPage page = new PDPage();
@@ -36,28 +37,35 @@ public class PdfGenerator {
             contentStream.showText("Nom: " + clientName);
             contentStream.endText();
 
+            // mode Paiement
+            contentStream.setFont(PDType1Font.HELVETICA, 14);
+            contentStream.beginText();
+            contentStream.newLineAtOffset(60, 670);
+            contentStream.showText("mode de paiement: " + modePaiement);
+            contentStream.endText();
+
             // Montant HT
             contentStream.setFont(PDType1Font.HELVETICA, 12);
             contentStream.beginText();
-            contentStream.newLineAtOffset(250, 670);
+            contentStream.newLineAtOffset(250, 640);
             contentStream.showText("Montant HT: " + formatAmount(montantHT) + " EUR");
             contentStream.endText();
 
             // Montant TVA
             contentStream.setFont(PDType1Font.HELVETICA, 12);
             contentStream.beginText();
-            contentStream.newLineAtOffset(250, 650);
+            contentStream.newLineAtOffset(250, 620);
             contentStream.showText("Montant TVA: " + formatAmount(montantTVA) + " EUR");
             contentStream.endText();
 
             // Articles
             contentStream.setFont(PDType1Font.HELVETICA, 12);
             contentStream.beginText();
-            contentStream.newLineAtOffset(65, 600);
+            contentStream.newLineAtOffset(65, 580);
             contentStream.showText("Articles:");
             contentStream.endText();
 
-            int yPosition = 590;
+            int yPosition = 550;
 
             // Lignes de commande détaillées
             yPosition -= 20;

@@ -5,27 +5,20 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { AiFillDelete } from "react-icons/ai";
 
 const AvisList = ({ avis, onAvisDeleted }) => {
-  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
+  const { user, isAuthenticated } = useAuth0();
   const [clients, setClients] = useState({});
 
   useEffect(() => {
-    if (isAuthenticated) {
-      avis.forEach((avisItem) => {
-        if (!clients[avisItem.client]) {
-          fetchClient(avisItem.client);
-        }
-      });
-    }
-  }, [avis, isAuthenticated]);
+    avis.forEach((avisItem) => {
+      if (!clients[avisItem.client]) {
+        fetchClient(avisItem.client);
+      }
+    });
+  }, [avis]);
 
   const fetchClient = async (clientId) => {
     try {
-      const accessToken = await getAccessTokenSilently();
-      const response = await fetch(`/api/clients/${clientId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
+      const response = await fetch(`/api/clients/${clientId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch client data');
       }
@@ -58,7 +51,7 @@ const AvisList = ({ avis, onAvisDeleted }) => {
             )}
             <div className="flex items-center mb-2">
               <FaUserCircle className="mr-2" size="1.7em" /> 
-              <p className="text-sm font-semibold">{isAuthenticated ? clients[avisItem.client] : 'user'}</p>
+              <p className="text-sm font-semibold">{clients[avisItem.client] || 'user'}</p>
             </div>
             <div className="flex items-center mb-2">
               <StarRatings

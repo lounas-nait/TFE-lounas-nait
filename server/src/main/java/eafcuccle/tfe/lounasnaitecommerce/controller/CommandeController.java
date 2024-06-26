@@ -36,6 +36,8 @@ public class CommandeController {
     private final LignePanierRepository lignePanierRepository;
     private final FactureRepository factureRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final PaiementRepository paiementRepository;
+    private final ModePaiementRepository modePaiementRepository;
     private final EmailService emailService;
     private final EmailLivraisonService emailLivraisonService;
     private final EmailAnnulationService emailAnnulationService;
@@ -50,6 +52,8 @@ public class CommandeController {
             LignePanierRepository lignePanierRepository,
             FactureRepository factureRepository,
             UtilisateurRepository utilisateurRepository,
+            PaiementRepository paiementRepository,
+            ModePaiementRepository modePaiementRepository,
             EmailService emailService,
             EmailLivraisonService emailLivraisonService,
             EmailAnnulationService emailAnnulationService) {
@@ -60,6 +64,8 @@ public class CommandeController {
         this.lignePanierRepository = lignePanierRepository;
         this.factureRepository = factureRepository;
         this.utilisateurRepository = utilisateurRepository;
+        this.paiementRepository = paiementRepository;
+        this.modePaiementRepository = modePaiementRepository;
         this.emailService = emailService;
         this.emailLivraisonService = emailLivraisonService;
         this.emailAnnulationService = emailAnnulationService;
@@ -96,15 +102,17 @@ public class CommandeController {
         }
     }
 
-    @PostMapping("/api/commandes/{idClient}")
-    public ResponseEntity<?> createCommande(@RequestBody Commande commande,
+    @PostMapping(value = "/api/commandes/{idClient}/{modePaiementId}", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> createCommande(
+            @RequestBody Commande commande,
             @PathVariable("idClient") String idClient,
+            @PathVariable("modePaiementId") String modePaiementId,
             UriComponentsBuilder builder) throws MessagingException, IOException {
         try {
             commande.setId(UUID.randomUUID());
 
             UUID idClientUuid = UUID.fromString(idClient);
-
+            UUID idModePaiement = UUID.fromString(modePaiementId);
             Client client = clientRepository.findById(idClientUuid)
                     .orElseThrow(() -> new RuntimeException("Client not found"));
 
@@ -141,8 +149,10 @@ public class CommandeController {
                     .mapToDouble(ligneCommande -> ligneCommande.getPrixUnitairePaye() * ligneCommande.getQuantite())
                     .sum();
 
+            // Enregistrement de la commande
             Commande savedCommande = commandeRepository.save(commande);
 
+            // Création de la facture
             Facture facture = new Facture();
             facture.setId(UUID.randomUUID());
             facture.setMontantHT(montantHT);
@@ -150,9 +160,24 @@ public class CommandeController {
             facture.setCommande(savedCommande);
             Facture savedFacture = factureRepository.save(facture);
 
+            // Création du paiement
+            Paiement paiement = new Paiement();
+            paiement.setId(UUID.randomUUID());
+
+            // Récupérer le mode de paiement choisi par l'ID
+            ModePaiement modePaiement = modePaiementRepository.findById(idModePaiement)
+                    .orElseThrow(() -> new RuntimeException("Mode de paiement not found"));
+
+            paiement.setModePaiement(modePaiement);
+            paiement.setFacture(savedFacture);
+
+            // Enregistrement du paiement
+            paiementRepository.save(paiement);
+
             savedCommande.setFacture(savedFacture);
             commandeRepository.save(savedCommande);
 
+            // Suppression des lignes de panier
             lignesPanier.forEach(lignePanier -> lignePanierRepository.delete(lignePanier));
 
             panier.setLignesPanier(new ArrayList<>());
@@ -165,8 +190,10 @@ public class CommandeController {
 
             emailService.sendOrderConfirmationEmail(client.getEmail(), client.getNom(), articles, montantHT,
                     montantTotal,
-                    lignesCommande);
+                    lignesCommande,
+                    modePaiement.getNom());
 
+            // Construction de l'URI pour la nouvelle commande créée
             URI linkToNewCommande = builder.pathSegment("api", "commandes", "{id}")
                     .buildAndExpand(savedCommande.getId()).toUri();
 

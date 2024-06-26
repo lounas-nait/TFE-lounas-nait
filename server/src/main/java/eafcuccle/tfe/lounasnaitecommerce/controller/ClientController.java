@@ -56,9 +56,6 @@ public class ClientController {
     @GetMapping("/api/clients/{clientId}")
     public ResponseEntity<?> getClientById(@PathVariable("clientId") String clientId, Authentication authentication) {
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
         UUID idClient;
         try {
             idClient = UUID.fromString(clientId);

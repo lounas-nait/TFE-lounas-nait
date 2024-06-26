@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "facture")
@@ -20,6 +21,7 @@ public class Facture {
     private float montantTVA;
 
     @OneToOne(mappedBy = "facture", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private Paiement paiement;
 
     @OneToOne(fetch = FetchType.LAZY)

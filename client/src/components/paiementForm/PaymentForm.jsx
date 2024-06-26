@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import handlePayment from './handlePayment';
 import { NavLink } from 'react-router-dom';
 import { BsArrowLeft } from 'react-icons/bs';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 
 const PaymentForm = () => {
   const { getAccessTokenSilently } = useAuth0();
@@ -35,6 +36,7 @@ const PaymentForm = () => {
     securityCode: ''
   });
 
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Visa');
   const [paymentError, setPaymentError] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -56,27 +58,25 @@ const PaymentForm = () => {
   const total = subTotal + shippingCost;
 
   const validatePaymentDetails = () => {
-    // Expressions régulières pour la validation
-    const cardNumberRegex = /^[0-9]{4} [0-9]{4} [0-9]{4} [0-9]{4}$/;
-    const cvvRegex = /^[0-9]{3}$/;
-    const nameOnCardRegex = /^[a-zA-Z\s]*$/; // Permet seulement des lettres et espaces
+    if (selectedPaymentMethod === 'Visa') {
+      const cardNumberRegex = /^[0-9]{4} [0-9]{4} [0-9]{4} [0-9]{4}$/;
+      const cvvRegex = /^[0-9]{3}$/;
+      const nameOnCardRegex = /^[a-zA-Z\s]*$/;
 
-    // Validation du nom sur la carte
-    if (!nameOnCardRegex.test(cardDetails.nameOnCard.trim())) {
-      setPaymentError('Veuillez entrer un nom sur la carte valide.');
-      return false;
-    }
+      if (!nameOnCardRegex.test(cardDetails.nameOnCard.trim())) {
+        setPaymentError('Veuillez entrer un nom sur la carte valide.');
+        return false;
+      }
 
-    // Validation du numéro de carte
-    if (!cardNumberRegex.test(cardDetails.cardNumber.trim())) {
-      setPaymentError('Veuillez entrer un numéro de carte valide (format: 0000 0000 0000 0000).');
-      return false;
-    }
+      if (!cardNumberRegex.test(cardDetails.cardNumber.trim())) {
+        setPaymentError('Veuillez entrer un numéro de carte valide (format: 0000 0000 0000 0000).');
+        return false;
+      }
 
-    // Validation du CVV
-    if (!cvvRegex.test(cardDetails.securityCode.trim())) {
-      setPaymentError('Veuillez entrer un code de sécurité (CVV) valide (3 chiffres).');
-      return false;
+      if (!cvvRegex.test(cardDetails.securityCode.trim())) {
+        setPaymentError('Veuillez entrer un code de sécurité (CVV) valide (3 chiffres).');
+        return false;
+      }
     }
 
     return true;
@@ -87,9 +87,38 @@ const PaymentForm = () => {
     setCardDetails({ ...cardDetails, [name]: value });
   };
 
-  const handlePaymentSuccess = () => {
-    mutate('/api/paniers');
+  const handlePaymentSuccess = async () => {
+    await mutate('/api/paniers');
     setShowSuccessModal(true);
+  };
+
+  const handlePayPalApprove = async (data, actions) => {
+    try {
+      const order = await actions.order.capture();
+      if (order.status === 'COMPLETED') {
+        const paymentSuccess = await handlePayment(
+          'PayPal', // Utiliser 'PayPal' comme méthode de paiement
+          null,
+          validatePaymentDetails,
+          clientId,
+          cartItems,
+          total,
+          today,
+          getAccessTokenSilently,
+          updateCartCount,
+          setPaymentError,
+          setCardDetails,
+          handlePaymentSuccess
+        );
+
+        if (paymentSuccess) {
+          handlePaymentSuccess();
+        }
+      }
+    } catch (error) {
+      console.error('Error during PayPal payment approval:', error);
+      setPaymentError('Failed to process PayPal payment.');
+    }
   };
 
   return (
@@ -173,118 +202,187 @@ const PaymentForm = () => {
                     <div className="w-full mx-auto rounded-lg bg-white border border-gray-200 text-gray-800 font-light mb-6">
                       <div className="w-full p-3 border-b border-gray-200">
                         <div className="mb-5">
-                          <label htmlFor="type1" className="flex items-center cursor-pointer">
-                            <input type="radio" className="form-radio h-5 w-5 text-indigo-500" name="type" id="type1" defaultChecked />
+                          <label htmlFor="visa" className="flex items-center cursor-pointer">
+                            <input
+                              type="radio"
+                              className="form-radio h-5 w-5 text-indigo-500"
+                              name="paymentMethod"
+                              id="visa"
+                              value="Visa"
+                              checked={selectedPaymentMethod === 'Visa'}
+                              onChange={() => setSelectedPaymentMethod('Visa')}
+                            />
                             <img src="https://leadershipmemphis.org/wp-content/uploads/2020/08/780370.png" className="h-6 ml-3" />
                           </label>
+                          <label htmlFor="paypal" className="flex items-center cursor-pointer mt-3">
+                            <input
+                              type="radio"
+                              className="form-radio h-5 w-5 text-indigo-500"
+                              name="type"
+                              id="type2"
+                              value="PayPal"
+                              checked={selectedPaymentMethod === 'PayPal'}
+                              onChange={() => setSelectedPaymentMethod('PayPal')}
+                            />
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" className="h-6 ml-3" />
+                          </label>
                         </div>
-                        <div>
-                          <div className="mb-3">
-                            <label className="text-gray-600 font-semibold text-sm mb-2 ml-1">Name on card</label>
-                            <div>
+                        {selectedPaymentMethod === 'Visa' && (
+                          <div id="visaForm">
+                            <div className="mb-3">
+                              <label htmlFor="nameOnCard" className="text-sm font-semibold text-gray-600">
+                                Nom sur la carte
+                              </label>
                               <input
-                                className="w-full px-3 py-2 mb-1 border border-gray-200 rounded-md focus                                 :outline-none focus:border-indigo-500 transition-colors"
-                                placeholder="NAIT YOUCEF Lounas"
                                 type="text"
                                 name="nameOnCard"
+                                id="nameOnCard"
+                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                placeholder="Nom sur la carte"
                                 value={cardDetails.nameOnCard}
                                 onChange={handleInputChange}
                               />
                             </div>
-                          </div>
-                          <div className="mb-3">
-                            <label className="text-gray-600 font-semibold text-sm mb-2 ml-1">Card number</label>
-                            <div>
+                            <div className="mb-3">
+                              <label htmlFor="cardNumber" className="text-sm font-semibold text-gray-600">
+                                Numéro de la carte
+                              </label>
                               <input
-                                className="w-full px-3 py-2 mb-1 border border-gray-200 rounded-md focus:outline-none focus:border-indigo-500 transition-colors"
-                                placeholder="0000 0000 0000 0000"
                                 type="text"
                                 name="cardNumber"
+                                id="cardNumber"
+                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                placeholder="0000 0000 0000 0000"
                                 value={cardDetails.cardNumber}
                                 onChange={handleInputChange}
                               />
                             </div>
-                          </div>
-                          <div className="mb-3 -mx-2 flex items-end">
-                            <div className="px-2 w-1/4">
-                              <label className="text-gray-600 font-semibold text-sm mb-2 ml-1">Expiration date</label>
-                              <div>
+                            <div className="mb-3 -mx-2 flex items-end">
+                              <div className="px-2 w-1/2">
+                                <label htmlFor="expirationMonth" className="text-sm font-semibold text-gray-600">
+                                  Mois d'expiration
+                                </label>
                                 <select
-                                  className="form-select w-full px-3 py-2 mb-1 border border-gray-200 rounded-md focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
                                   name="expirationMonth"
+                                  id="expirationMonth"
+                                  className="form-select w-full p-2 border border-gray-300 rounded mt-1"
                                   value={cardDetails.expirationMonth}
                                   onChange={handleInputChange}
                                 >
-                                  <option value="01">01 - January</option>
-                                  <option value="02">02 - February</option>
-                                  <option value="03">03 - March</option>
-                                  <option value="04">04 - April</option>
-                                  <option value="05">05 - May</option>
-                                  <option value="06">06 - June</option>
-                                  <option value="07">07 - July</option>
-                                  <option value="08">08 - August</option>
-                                  <option value="09">09 - September</option>
-                                  <option value="10">10 - October</option>
-                                  <option value="11">11 - November</option>
-                                  <option value="12">12 - December</option>
+                                  <option value="01">01</option>
+                                  <option value="02">02</option>
+                                  <option value="03">03</option>
+                                  <option value="04">04</option>
+                                  <option value="05">05</option>
+                                  <option value="06">06</option>
+                                  <option value="07">07</option>
+                                  <option value="08">08</option>
+                                  <option value="09">09</option>
+                                  <option value="10">10</option>
+                                  <option value="11">11</option>
+                                  <option value="12">12</option>
+                                </select>
+                              </div>
+                              <div className="px-2 w-1/2">
+                                <label htmlFor="expirationYear" className="text-sm font-semibold text-gray-600">
+                                  Année d'expiration
+                                </label>
+                                <select
+                                  name="expirationYear"
+                                  id="expirationYear"
+                                  className="form-select w-full p-2 border border-gray-300 rounded mt-1"
+                                  value={cardDetails.expirationYear}
+                                  onChange={handleInputChange}
+                                >
+                                  <option value="2024">2024</option>
+                                  <option value="2025">2025</option>
+                                  <option value="2026">2026</option>
+                                  <option value="2027">2027</option>
+                                  <option value="2028">2028</option>
                                 </select>
                               </div>
                             </div>
-                            <div className="px-2 w-1/4">
-                              <select
-                                className="form-select w-full px-3 py-2 mb-1 border border-gray-200 rounded-md focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
-                                name="expirationYear"
-                                value={cardDetails.expirationYear}
+                            <div className="mb-3">
+                              <label htmlFor="securityCode" className="text-sm font-semibold text-gray-600">
+                                Code de sécurité
+                              </label>
+                              <input
+                                type="text"
+                                name="securityCode"
+                                id="securityCode"
+                                className="w-full p-2 border border-gray-300 rounded mt-1"
+                                placeholder="000"
+                                value={cardDetails.securityCode}
                                 onChange={handleInputChange}
-                              >
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026">2026</option>
-                                <option value="2027">2027</option>
-                                <option value="2028">2028</option>
-                                <option value="2029">2029</option>
-                              </select>
-                            </div>
-                            <div className="px-2 w-1/4">
-                              <label className="text-gray-600 font-semibold text-sm mb-2 ml-1">CVV</label>
-                              <div>
-                                <input
-                                  className="w-full px-3 py-2 mb-1 border border-gray-200 rounded-md focus:outline-none focus:border-indigo-500 transition-colors"
-                                  placeholder="000"
-                                  type="text"
-                                  name="securityCode"
-                                  value={cardDetails.securityCode}
-                                  onChange={handleInputChange}
-                                />
-                              </div>
+                              />
                             </div>
                           </div>
-                        </div>
+                        )}
+                        {selectedPaymentMethod === 'PayPal' && (
+                          <div className="flex justify-center">
+                            <PayPalScriptProvider
+                              options={{ 'client-id': 'AVQUWKVgq48z1YnuYsCgeVF0ZBa-NjUhf4Jxp9CVqqs4ygO6yxAKF3YI6jg-Fh-6pdetdTMZeVGm0hhn&currency=EUR' }}
+                            >
+                              <PayPalButtons
+                                style={{ layout: 'horizontal' }}
+                                createOrder={(data, actions) => {
+                                  return actions.order.create({
+                                    purchase_units: [
+                                      {
+                                        amount: {
+                                          value: total.toFixed(2),
+                                        },
+                                      },
+                                    ],
+                                  });
+                                }}
+                                onApprove={(data, actions) => handlePayPalApprove(data, actions)}
+                                onError={(err) => {
+                                  console.error('PayPal error:', err);
+                                  setPaymentError('Failed to initialize PayPal payment.');
+                                }}
+                                onCancel={() => {
+                                  console.log('PayPal payment cancelled.');
+                                }}
+                              />
+                            </PayPalScriptProvider>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    {paymentError && <div className="text-red-500 mb-4">{paymentError}</div>}
-                    <button
-                      onClick={() => {
-                        if (validatePaymentDetails()) {
-                          handlePayment(
-                            cardDetails,
-                            validatePaymentDetails,
-                            clientId,
-                            cartItems,
-                            total,
-                            today,
-                            getAccessTokenSilently,
-                            updateCartCount,
-                            setPaymentError,
-                            setCardDetails,
-                            handlePaymentSuccess
-                          );
-                        }
-                      }}
-                      className="block w-full max-w-xs mx-auto bg-indigo-500 hover focus text-white rounded-lg px-3 py-2 font-semibold"
-                    >
-                      PAYER
-                    </button>
+                    <div>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const success = await handlePayment(
+                              selectedPaymentMethod,
+                              cardDetails,
+                              validatePaymentDetails,
+                              clientId,
+                              cartItems,
+                              total,
+                              today,
+                              getAccessTokenSilently,
+                              updateCartCount,
+                              setPaymentError,
+                              setCardDetails,
+                              handlePaymentSuccess
+                            );
+                            if (success) {
+                              handlePaymentSuccess();
+                            }
+                          } catch (error) {
+                            setPaymentError("Une erreur s'est produite. Veuillez réessayer.");
+                          }
+                        }}
+                        className="block w-full max-w-xs mx-auto bg-blue-500 hover:bg-blue-700 focus:bg-blue-700 text-white rounded-lg px-3 py-3 font-semibold"
+                        style={{ display: selectedPaymentMethod === 'PayPal' ? 'none' : 'block' }}
+                      >
+                        Payer avec Visa
+                      </button>
+                      {paymentError && <p className="text-red-500 mt-3">{paymentError}</p>}
+                    </div>
+
                   </>
                 )}
               </div>
@@ -355,4 +453,3 @@ const PaymentForm = () => {
 };
 
 export default PaymentForm;
-

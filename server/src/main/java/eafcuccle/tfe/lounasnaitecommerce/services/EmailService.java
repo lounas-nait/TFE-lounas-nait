@@ -26,7 +26,7 @@ public class EmailService {
     private JavaMailSender emailSender;
 
     public void sendOrderConfirmationEmail(String to, String clientName, List<String> articles,
-            float montantHT, float montantTVA, List<LigneCommande> lignesCommande)
+            float montantHT, float montantTVA, List<LigneCommande> lignesCommande, String modePaiement)
             throws MessagingException, IOException {
 
         // Chemin où la facture PDF sera temporairement sauvegardée
@@ -34,7 +34,8 @@ public class EmailService {
 
         // Générer la facture PDF
         try {
-            PdfGenerator.createInvoicePdf(invoiceFilePath, clientName, articles, montantHT, montantTVA, lignesCommande);
+            PdfGenerator.createInvoicePdf(invoiceFilePath, clientName, articles, montantHT, montantTVA, lignesCommande,
+                    modePaiement);
         } catch (Exception e) {
             e.printStackTrace();
         }
