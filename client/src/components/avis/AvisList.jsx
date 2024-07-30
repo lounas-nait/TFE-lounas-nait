@@ -33,7 +33,7 @@ const AvisList = ({ avis, onAvisDeleted }) => {
   };
 
   const reversedAvis = [...avis].reverse();
-  const isAdmin = isAuthenticated && user.email && user.email.startsWith('admin');
+  const isAdmin = isAuthenticated && user.email && user.email.startsWith('lounas.nait960');
 
   return (
     <div className="w-1/2 pr-4">

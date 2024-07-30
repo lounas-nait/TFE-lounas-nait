@@ -28,6 +28,11 @@ const categories = [
     name: 'Instruments à vent',
     image: 'https://www.jardinsdefrance.org/wp-content/uploads/2020/12/DL_collection_personnelle_flutes_s_rie_2-min-211x300.png',
   },
+  {
+    id: '6',
+    name: 'Violon',
+    image: 'https://th.bing.com/th/id/OIP.0BTBVNCbFmhWXegSMQiYjgHaE7?rs=1&pid=ImgDetMain',
+  },
 ];
 
 function Categories({ setSelectedCategory }) {

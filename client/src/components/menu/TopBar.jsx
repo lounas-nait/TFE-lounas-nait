@@ -89,7 +89,7 @@ function TopBar({ setSearchQuery }) {
         return <div>Loading ...</div>;
     }
 
-    const isAdmin = isAuthenticated && user.email.startsWith('admin');
+    const isAdmin = isAuthenticated && user.email.startsWith('lounas.nait960');
 
     // Vérification si vous êtes sur la page d'accueil
     const isHomePage = window.location.pathname === '/'; // Adapter le chemin selon votre routage
@@ -236,7 +236,7 @@ function TopBar({ setSearchQuery }) {
                 <InstrumentDetail
                     selectedInstrument={selectedInstrument}
                     handleCloseDetails={() => setSelectedInstrument(null)}
-                    isAdmin={isAuthenticated && user.email.startsWith('admin')}
+                    isAdmin={isAuthenticated && user.email.startsWith('lounas.nait960')}
                     handleQuantityChange={handleQuantiteChange}
                     handleUpdatedQuantiteChange={handleUpdatedQuantiteChange}
                     handleUpdateInstrument={handleUpdateInstrument}

@@ -10,7 +10,7 @@ const Sidebar = () => {
   const { cartCount } = useCart();
   const { user, isAuthenticated } = useAuth0();
 
-  const isAdmin = isAuthenticated && user.email.startsWith("admin");
+  const isAdmin = isAuthenticated && user.email.startsWith("lounas.nait960");
 
   return (
     <div className="fixed top-0 left-0 h-screen w-16 p-0 bg-gradient-to-b from-gray-300 from-5% via-stone-500 via-60% to-gray-700 to-80% ...">

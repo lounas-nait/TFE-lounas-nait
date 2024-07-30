@@ -54,7 +54,7 @@ const MesCommandes = () => {
 
   const handleAnnulerCommande = (id) => {
    
-    if (user.email && user.email.startsWith("admin")) {
+    if (user.email && user.email.startsWith("lounas.nait960")) {
       handleDeleteCommande(id);
     } else {
       alert("Vous n'avez pas les autorisations nécessaires pour annuler une commande.");
@@ -97,9 +97,8 @@ const MesCommandes = () => {
               <th className="pb-3 text-start min-w-[175px] px-3 py-2">Date</th>
               <th className="pb-3 text-end min-w-[100px] px-3 py-2">Montant Total</th>
               <th className="pb-3 text-end min-w-[100px] px-3 py-2">Statut</th>
-              {user.email && user.email.startsWith("admin") && (
+              {user.email && user.email.startsWith("lounas.nait960") && (
                 <>
-                  <th className="pb-3 text-center min-w-[100px] px-3 py-2">Client</th>
                   <th className="pb-3 text-center min-w-[100px] px-3 py-2">Actions</th>
                   <th className="pb-3 text-center min-w-[100px] px-3 py-2">Détails</th>
                 </>
@@ -115,9 +114,8 @@ const MesCommandes = () => {
                   <td className={`p-3 pr-4 text-end px-3 py-2 ${commande.statut === 'confirmé' ? 'text-green-500' : commande.statut === 'en livraison' ? 'text-orange-500' : ''}`}>
                     {commande.statut}
                   </td>
-                  {user.email && user.email.startsWith("admin") && commande.statut === 'confirmé' && (
+                  {user.email && user.email.startsWith("lounas.nait960") && commande.statut === 'confirmé' && (
                     <>
-                      <td className="p-3 pl-2 px-3 py-2">{commande.client}</td>
                       <td className="p-3 pr-12 text-center px-3 py-2">
                         <button
                           className="mx-1 focus:outline-none border border-red-500 rounded p-1 text-red-500"
@@ -142,7 +140,7 @@ const MesCommandes = () => {
                       </td>
                     </>
                   )}
-                  {(!user.email || !user.email.startsWith("admin")) && (
+                  {(!user.email || !user.email.startsWith("lounas.nait960")) && (
                     <td className="p-3 pr-12 text-center px-3 py-2" colSpan="2">
                       <button
                         className="mx-1 focus:outline-none border border-blue-500 rounded p-1 text-blue-500"

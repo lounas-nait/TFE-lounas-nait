@@ -34,9 +34,16 @@ function Main() {
   const toggleFavorite = (instrumentId) => {
     setFavoriteInstruments((prevFavorites) => {
       const isCurrentlyFavorite = prevFavorites[instrumentId];
-      return { ...prevFavorites, [instrumentId]: !isCurrentlyFavorite };
+      const newFavorites = { ...prevFavorites, [instrumentId]: !isCurrentlyFavorite };
+      localStorage.setItem('favoriteInstruments', JSON.stringify(newFavorites));
+      return newFavorites;
     });
   };
+
+  useEffect(() => {
+    const storedFavorites = JSON.parse(localStorage.getItem('favoriteInstruments')) || {};
+    setFavoriteInstruments(storedFavorites);
+  }, []);
 
   const fetchCartItemCount = async () => {
     const localCart = JSON.parse(localStorage.getItem('localCart')) || [];
@@ -70,7 +77,7 @@ function Main() {
   };
 
   useEffect(() => {
-    if (!user?.email.startsWith('admin')) {
+    if (!user?.email.startsWith('lounas.nait960')) {
       fetchCartItemCount();
     }
   }, [isAuthenticated]);
@@ -187,7 +194,7 @@ function Main() {
     return <div>Loading ...</div>;
   }
 
-  const isAdmin = isAuthenticated && user.email.startsWith('admin');
+  const isAdmin = isAuthenticated && user.email.startsWith('lounas.nait960');
 
   return (
     <div className='w-full relative'>
@@ -237,6 +244,7 @@ function Main() {
               favoriteInstruments={favoriteInstruments}
               isAdmin={isAdmin}
               handleDelete={handleDeleteInstrument}
+              toggleFavorite={toggleFavorite} 
             />
           </div>
           <div className="pagination-controls flex justify-center items-center mt-8 mb-8">
